@@ -1,6 +1,5 @@
 package cech12.woodenhopper.tileentity;
 
-import cech12.woodenhopper.WoodenHopperMod;
 import cech12.woodenhopper.api.tileentity.WoodenHopperTileEntities;
 import cech12.woodenhopper.block.WoodenHopperItemHandler;
 import cech12.woodenhopper.config.ServerConfig;
@@ -130,7 +129,7 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
     @Override
     @Nonnull
     protected ITextComponent getDefaultName() {
-        return new TranslationTextComponent(WoodenHopperMod.MOD_ID, "wooden_hopper");
+        return new TranslationTextComponent("block.woodenhopper.wooden_hopper");
     }
 
     @Override
@@ -286,7 +285,7 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
      * @return whether any items were successfully added to the hopper
      */
     public boolean pullItems(IHopper hopper) {
-        if (getItemHandler(this, Direction.UP)
+        return getItemHandler(this, Direction.UP)
                 .map(itemHandlerResult -> {
                     //get item from item handler
                     IItemHandler handler = itemHandlerResult.getKey();
@@ -311,16 +310,15 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
                         }
                     }
                     return false;
-                }).orElse(false)) {
-            return true;
-        }
-        //capture item
-        for (ItemEntity itementity : getCaptureItems(hopper)) {
-            if (captureItem(hopper, itementity)) {
-                return true;
-            }
-        }
-        return false;
+                }).orElseGet(() -> {
+                    //capture item
+                    for (ItemEntity itementity : getCaptureItems(hopper)) {
+                        if (captureItem(hopper, itementity)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                });
     }
 
     public boolean captureItem(IInventory p_200114_0_, ItemEntity p_200114_1_) {
