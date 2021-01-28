@@ -2,23 +2,18 @@ package cech12.woodenhopper.tileentity;
 
 import cech12.woodenhopper.WoodenHopperMod;
 import cech12.woodenhopper.api.tileentity.WoodenHopperTileEntities;
+import cech12.woodenhopper.block.WoodenHopperItemHandler;
 import cech12.woodenhopper.config.ServerConfig;
 import cech12.woodenhopper.inventory.WoodenHopperContainer;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.ChestBlock;
 import net.minecraft.block.HopperBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.ISidedInventory;
-import net.minecraft.inventory.ISidedInventoryProvider;
-import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.ChestTileEntity;
 import net.minecraft.tileentity.IHopper;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.LockableLootTileEntity;
@@ -26,24 +21,29 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.EntityPredicates;
 import net.minecraft.util.NonNullList;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.shapes.IBooleanFunction;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemHandlerHelper;
+import net.minecraftforge.items.ItemStackHandler;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class WoodenHopperTileEntity extends LockableLootTileEntity implements IHopper, ITickableTileEntity {
 
-    private NonNullList<ItemStack> inventory = NonNullList.withSize(1, ItemStack.EMPTY);
+    private ItemStackHandler inventory = new ItemStackHandler();
     private int transferCooldown = -1;
     private long tickedGameTime;
 
@@ -54,9 +54,9 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
     @Override
     public void read(@Nonnull BlockState state, @Nonnull CompoundNBT nbt) {
         super.read(state, nbt);
-        this.inventory = NonNullList.withSize(this.getSizeInventory(), ItemStack.EMPTY);
+        inventory = new ItemStackHandler();
         if (!this.checkLootAndRead(nbt)) {
-            ItemStackHelper.loadAllItems(nbt, this.inventory);
+            this.inventory.deserializeNBT(nbt);
         }
         this.transferCooldown = nbt.getInt("TransferCooldown");
     }
@@ -66,7 +66,7 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
     public CompoundNBT write(@Nonnull CompoundNBT compound) {
         super.write(compound);
         if (!this.checkLootAndWrite(compound)) {
-            ItemStackHelper.saveAllItems(compound, this.inventory);
+            compound.merge(this.inventory.serializeNBT());
         }
         compound.putInt("TransferCooldown", this.transferCooldown);
         return compound;
@@ -77,7 +77,19 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
      */
     @Override
     public int getSizeInventory() {
-        return this.inventory.size();
+        return this.inventory.getSlots();
+    }
+
+    @Override
+    @Nonnull
+    protected NonNullList<ItemStack> getItems() {
+        return NonNullList.withSize(1, this.inventory.getStackInSlot(0));
+    }
+
+    @Override
+    protected void setItems(@Nonnull NonNullList<ItemStack> itemsIn) {
+        this.inventory.setStackInSlot(0, itemsIn.get(0));
+        this.markDirty();
     }
 
     /**
@@ -87,7 +99,22 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
     @Nonnull
     public ItemStack decrStackSize(int index, int count) {
         this.fillWithLoot(null);
-        return ItemStackHelper.getAndSplit(this.getItems(), index, count);
+        ItemStack stack = this.inventory.extractItem(index, count, false);
+        this.markDirty();
+        return stack;
+    }
+
+    /**
+     * Removes a stack from the given slot and returns it.
+     */
+    @Override
+    @Nonnull
+    public ItemStack removeStackFromSlot(int index) {
+        this.fillWithLoot(null);
+        ItemStack stack = this.inventory.getStackInSlot(index);
+        this.inventory.setStackInSlot(index, ItemStack.EMPTY);
+        this.markDirty();
+        return stack;
     }
 
     /**
@@ -96,11 +123,8 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
     @Override
     public void setInventorySlotContents(int index, @Nonnull ItemStack stack) {
         this.fillWithLoot(null);
-        this.getItems().set(index, stack);
-        if (stack.getCount() > this.getInventoryStackLimit()) {
-            stack.setCount(this.getInventoryStackLimit());
-        }
-
+        this.inventory.setStackInSlot(index, stack);
+        this.markDirty();
     }
 
     @Override
@@ -128,11 +152,9 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
                 if (!this.isEmpty()) {
                     flag = this.transferItemsOut();
                 }
-
                 if (!this.isFull()) {
                     flag |= p_200109_1_.get();
                 }
-
                 if (flag) {
                     this.setTransferCooldown(ServerConfig.WOODEN_HOPPER_COOLDOWN.get());
                     this.markDirty();
@@ -142,61 +164,118 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
     }
 
     private boolean isFull() {
-        for(ItemStack itemstack : this.inventory) {
-            if (itemstack.isEmpty() || itemstack.getCount() != itemstack.getMaxStackSize()) {
+        ItemStack itemstack = this.inventory.getStackInSlot(0);
+        return !itemstack.isEmpty() && itemstack.getCount() == itemstack.getMaxStackSize();
+    }
+
+    private static ItemStack putStackInInventoryAllSlots(TileEntity source, Object destination, IItemHandler destInventory, ItemStack stack)
+    {
+        for (int slot = 0; slot < destInventory.getSlots() && !stack.isEmpty(); slot++) {
+            stack = insertStack(source, destination, destInventory, stack, slot);
+        }
+        return stack;
+    }
+
+    private static ItemStack insertStack(TileEntity source, Object destination, IItemHandler destInventory, ItemStack stack, int slot)
+    {
+        ItemStack itemstack = destInventory.getStackInSlot(slot);
+        if (destInventory.insertItem(slot, stack, true).isEmpty()) {
+            boolean insertedItem = false;
+            boolean inventoryWasEmpty = isEmpty(destInventory);
+            if (itemstack.isEmpty()) {
+                destInventory.insertItem(slot, stack, false);
+                stack = ItemStack.EMPTY;
+                insertedItem = true;
+            } else if (ItemHandlerHelper.canItemStacksStack(itemstack, stack)) {
+                int originalSize = stack.getCount();
+                stack = destInventory.insertItem(slot, stack, false);
+                insertedItem = originalSize < stack.getCount();
+            }
+            if (insertedItem) {
+                if (inventoryWasEmpty && destination instanceof WoodenHopperTileEntity) {
+                    WoodenHopperTileEntity destinationHopper = (WoodenHopperTileEntity)destination;
+                    if (!destinationHopper.mayTransfer()) {
+                        int k = 0;
+                        if (source instanceof WoodenHopperTileEntity) {
+                            if (destinationHopper.getLastUpdateTime() >= ((WoodenHopperTileEntity) source).getLastUpdateTime()) {
+                                k = 1;
+                            }
+                        }
+                        destinationHopper.setTransferCooldown(ServerConfig.WOODEN_HOPPER_COOLDOWN.get() - k);
+                    }
+                }
+            }
+        }
+
+        return stack;
+    }
+
+    private static LazyOptional<Pair<IItemHandler, Object>> getItemHandler(IHopper hopper, Direction hopperFacing) {
+        double x = hopper.getXPos() + (double) hopperFacing.getXOffset();
+        double y = hopper.getYPos() + (double) hopperFacing.getYOffset();
+        double z = hopper.getZPos() + (double) hopperFacing.getZOffset();
+        return getItemHandler(hopper.getWorld(), x, y, z, hopperFacing.getOpposite());
+    }
+
+    private static boolean isFull(IItemHandler itemHandler) {
+        for (int slot = 0; slot < itemHandler.getSlots(); slot++) {
+            ItemStack stackInSlot = itemHandler.getStackInSlot(slot);
+            if (stackInSlot.isEmpty() || stackInSlot.getCount() < itemHandler.getSlotLimit(slot)) {
                 return false;
             }
         }
         return true;
     }
 
-    private boolean transferItemsOut() {
-        //if (net.minecraftforge.items.VanillaInventoryCodeHooks.insertHook(this)) return true; //TODO??
-        IInventory iinventory = this.getInventoryForHopperTransfer();
-        if (iinventory == null) {
-            return false;
-        } else {
-            Direction direction = this.getBlockState().get(HopperBlock.FACING).getOpposite();
-            if (this.isInventoryFull(iinventory, direction)) {
-                return false;
-            } else {
-                for(int i = 0; i < this.getSizeInventory(); ++i) {
-                    if (!this.getStackInSlot(i).isEmpty()) {
-                        ItemStack itemstack = this.getStackInSlot(i).copy();
-                        ItemStack itemstack1 = putStackInInventoryAllSlots(this, iinventory, this.decrStackSize(i, 1), direction);
-                        if (itemstack1.isEmpty()) {
-                            iinventory.markDirty();
-                            return true;
-                        }
-
-                        this.setInventorySlotContents(i, itemstack);
-                    }
-                }
-
+    private static boolean isEmpty(IItemHandler itemHandler) {
+        for (int slot = 0; slot < itemHandler.getSlots(); slot++) {
+            ItemStack stackInSlot = itemHandler.getStackInSlot(slot);
+            if (stackInSlot.getCount() > 0) {
                 return false;
             }
         }
+        return true;
     }
 
-    private static IntStream func_213972_a(IInventory p_213972_0_, Direction p_213972_1_) {
-        return p_213972_0_ instanceof ISidedInventory ? IntStream.of(((ISidedInventory)p_213972_0_).getSlotsForFace(p_213972_1_)) : IntStream.range(0, p_213972_0_.getSizeInventory());
+    public static LazyOptional<Pair<IItemHandler, Object>> getItemHandler(World worldIn, double x, double y, double z, final Direction side) {
+        int i = MathHelper.floor(x);
+        int j = MathHelper.floor(y);
+        int k = MathHelper.floor(z);
+        BlockPos blockpos = new BlockPos(i, j, k);
+        BlockState state = worldIn.getBlockState(blockpos);
+        if (state.hasTileEntity()) {
+            TileEntity tileentity = worldIn.getTileEntity(blockpos);
+            if (tileentity != null) {
+                return tileentity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side)
+                        .map(capability -> ImmutablePair.of(capability, tileentity));
+            }
+        }
+        return LazyOptional.empty();
     }
 
-    /**
-     * Returns false if the inventory has any room to place items in
-     */
-    private boolean isInventoryFull(IInventory inventoryIn, Direction side) {
-        return func_213972_a(inventoryIn, side).allMatch((p_213970_1_) -> {
-            ItemStack itemstack = inventoryIn.getStackInSlot(p_213970_1_);
-            return itemstack.getCount() >= itemstack.getMaxStackSize();
-        });
-    }
+    private boolean transferItemsOut() {
+        Direction hopperFacing = this.getBlockState().get(HopperBlock.FACING);
+        return getItemHandler(this, hopperFacing)
+                .map(destinationResult -> {
+                    IItemHandler itemHandler = destinationResult.getKey();
+                    Object destination = destinationResult.getValue();
+                    if (!isFull(itemHandler)) {
+                        for (int i = 0; i < this.getSizeInventory(); ++i) {
+                            if (!this.getStackInSlot(i).isEmpty()) {
+                                ItemStack originalSlotContents = this.getStackInSlot(i).copy();
+                                ItemStack insertStack = this.decrStackSize(i, 1);
+                                ItemStack remainder = putStackInInventoryAllSlots(this, destination, itemHandler, insertStack);
+                                if (remainder.isEmpty()) {
+                                    return true;
+                                }
+                                this.setInventorySlotContents(i, originalSlotContents);
+                            }
+                        }
 
-    /**
-     * Returns false if the specified IInventory contains any items
-     */
-    private static boolean isInventoryEmpty(IInventory inventoryIn, Direction side) {
-        return func_213972_a(inventoryIn, side).allMatch((p_213973_1_) -> inventoryIn.getStackInSlot(p_213973_1_).isEmpty());
+                    }
+                    return false;
+                })
+                .orElse(false);
     }
 
     /**
@@ -206,209 +285,61 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
      * @param hopper the hopper in question
      * @return whether any items were successfully added to the hopper
      */
-    public static boolean pullItems(IHopper hopper) {
-        Boolean ret = net.minecraftforge.items.VanillaInventoryCodeHooks.extractHook(hopper);
-        if (ret != null) return ret;
-        IInventory iinventory = getSourceInventory(hopper);
-        if (iinventory != null) {
-            Direction direction = Direction.DOWN;
-            return !isInventoryEmpty(iinventory, direction) && func_213972_a(iinventory, direction).anyMatch((p_213971_3_) -> pullItemFromSlot(hopper, iinventory, p_213971_3_, direction));
-        } else {
-            for(ItemEntity itementity : getCaptureItems(hopper)) {
-                if (captureItem(hopper, itementity)) {
-                    return true;
-                }
-            }
-            return false;
+    public boolean pullItems(IHopper hopper) {
+        if (getItemHandler(this, Direction.UP)
+                .map(itemHandlerResult -> {
+                    //get item from item handler
+                    IItemHandler handler = itemHandlerResult.getKey();
+                    for (int i = 0; i < handler.getSlots(); i++) {
+                        ItemStack extractItem = handler.extractItem(i, 1, true);
+                        if (!extractItem.isEmpty()) {
+                            for (int j = 0; j < this.getSizeInventory(); j++) {
+                                ItemStack destStack = this.getStackInSlot(j);
+                                if (this.isItemValidForSlot(j, extractItem) && (destStack.isEmpty() || destStack.getCount() < destStack.getMaxStackSize()
+                                        && destStack.getCount() < this.getInventoryStackLimit() && ItemHandlerHelper.canItemStacksStack(extractItem, destStack))) {
+                                    extractItem = handler.extractItem(i, 1, false);
+                                    if (destStack.isEmpty()) {
+                                        this.setInventorySlotContents(j, extractItem);
+                                    } else {
+                                        destStack.grow(1);
+                                        this.setInventorySlotContents(j, destStack);
+                                    }
+                                    this.markDirty();
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                    return false;
+                }).orElse(false)) {
+            return true;
         }
-    }
-
-    /**
-     * Pulls from the specified slot in the inventory and places in any available slot in the hopper. Returns true if the
-     * entire stack was moved
-     */
-    private static boolean pullItemFromSlot(IHopper hopper, IInventory inventoryIn, int index, Direction direction) {
-        ItemStack itemstack = inventoryIn.getStackInSlot(index);
-        if (!itemstack.isEmpty() && canExtractItemFromSlot(inventoryIn, itemstack, index, direction)) {
-            ItemStack itemstack1 = itemstack.copy();
-            ItemStack itemstack2 = putStackInInventoryAllSlots(inventoryIn, hopper, inventoryIn.decrStackSize(index, 1), null);
-            if (itemstack2.isEmpty()) {
-                inventoryIn.markDirty();
+        //capture item
+        for (ItemEntity itementity : getCaptureItems(hopper)) {
+            if (captureItem(hopper, itementity)) {
                 return true;
             }
-
-            inventoryIn.setInventorySlotContents(index, itemstack1);
         }
-
         return false;
     }
 
-    public static boolean captureItem(IInventory p_200114_0_, ItemEntity p_200114_1_) {
+    public boolean captureItem(IInventory p_200114_0_, ItemEntity p_200114_1_) {
         boolean flag = false;
         ItemStack itemstack = p_200114_1_.getItem().copy();
-        ItemStack itemstack1 = putStackInInventoryAllSlots(null, p_200114_0_, itemstack, null);
+        ItemStack itemstack1 = putStackInInventoryAllSlots(null, p_200114_0_, this.inventory, itemstack);
         if (itemstack1.isEmpty()) {
             flag = true;
             p_200114_1_.remove();
         } else {
             p_200114_1_.setItem(itemstack1);
         }
-
         return flag;
-    }
-
-    /**
-     * Attempts to place the passed stack in the inventory, using as many slots as required. Returns leftover items
-     */
-    public static ItemStack putStackInInventoryAllSlots(@Nullable IInventory source, IInventory destination, ItemStack stack, @Nullable Direction direction) {
-        if (destination instanceof ISidedInventory && direction != null) {
-            ISidedInventory isidedinventory = (ISidedInventory)destination;
-            int[] aint = isidedinventory.getSlotsForFace(direction);
-
-            for(int k = 0; k < aint.length && !stack.isEmpty(); ++k) {
-                stack = insertStack(source, destination, stack, aint[k], direction);
-            }
-        } else {
-            int i = destination.getSizeInventory();
-
-            for(int j = 0; j < i && !stack.isEmpty(); ++j) {
-                stack = insertStack(source, destination, stack, j, direction);
-            }
-        }
-
-        return stack;
-    }
-
-    /**
-     * Can this hopper insert the specified item from the specified slot on the specified side?
-     */
-    private static boolean canInsertItemInSlot(IInventory inventoryIn, ItemStack stack, int index, @Nullable Direction side) {
-        if (!inventoryIn.isItemValidForSlot(index, stack)) {
-            return false;
-        } else {
-            return !(inventoryIn instanceof ISidedInventory) || ((ISidedInventory)inventoryIn).canInsertItem(index, stack, side);
-        }
-    }
-
-    /**
-     * Can this hopper extract the specified item from the specified slot on the specified side?
-     */
-    private static boolean canExtractItemFromSlot(IInventory inventoryIn, ItemStack stack, int index, Direction side) {
-        return !(inventoryIn instanceof ISidedInventory) || ((ISidedInventory)inventoryIn).canExtractItem(index, stack, side);
-    }
-
-    /**
-     * Insert the specified stack to the specified inventory and return any leftover items
-     */
-    private static ItemStack insertStack(@Nullable IInventory source, IInventory destination, ItemStack stack, int index, @Nullable Direction direction) {
-        ItemStack itemstack = destination.getStackInSlot(index);
-        if (canInsertItemInSlot(destination, stack, index, direction)) {
-            boolean flag = false;
-            boolean flag1 = destination.isEmpty();
-            if (itemstack.isEmpty()) {
-                destination.setInventorySlotContents(index, stack);
-                stack = ItemStack.EMPTY;
-                flag = true;
-            } else if (canCombine(itemstack, stack)) {
-                int i = stack.getMaxStackSize() - itemstack.getCount();
-                int j = Math.min(stack.getCount(), i);
-                stack.shrink(j);
-                itemstack.grow(j);
-                flag = j > 0;
-            }
-
-            if (flag) {
-                if (flag1 && destination instanceof WoodenHopperTileEntity) {
-                    WoodenHopperTileEntity hoppertileentity1 = (WoodenHopperTileEntity)destination;
-                    if (!hoppertileentity1.mayTransfer()) {
-                        int k = 0;
-                        if (source instanceof WoodenHopperTileEntity) {
-                            WoodenHopperTileEntity hoppertileentity = (WoodenHopperTileEntity)source;
-                            if (hoppertileentity1.tickedGameTime >= hoppertileentity.tickedGameTime) {
-                                k = 1;
-                            }
-                        }
-
-                        hoppertileentity1.setTransferCooldown(8 - k);
-                    }
-                }
-
-                destination.markDirty();
-            }
-        }
-
-        return stack;
-    }
-
-    /**
-     * Returns the IInventory that this hopper is pointing into
-     */
-    @Nullable
-    private IInventory getInventoryForHopperTransfer() {
-        Direction direction = this.getBlockState().get(HopperBlock.FACING);
-        return getInventoryAtPosition(this.getWorld(), this.pos.offset(direction));
-    }
-
-    /**
-     * Gets the inventory that the provided hopper will transfer items from.
-     */
-    @Nullable
-    public static IInventory getSourceInventory(IHopper hopper) {
-        return getInventoryAtPosition(hopper.getWorld(), hopper.getXPos(), hopper.getYPos() + 1.0D, hopper.getZPos());
     }
 
     public static List<ItemEntity> getCaptureItems(IHopper p_200115_0_) {
         return p_200115_0_.getCollectionArea().toBoundingBoxList().stream().flatMap((p_200110_1_) -> {
             return p_200115_0_.getWorld().getEntitiesWithinAABB(ItemEntity.class, p_200110_1_.offset(p_200115_0_.getXPos() - 0.5D, p_200115_0_.getYPos() - 0.5D, p_200115_0_.getZPos() - 0.5D), EntityPredicates.IS_ALIVE).stream();
         }).collect(Collectors.toList());
-    }
-
-    @Nullable
-    public static IInventory getInventoryAtPosition(World p_195484_0_, BlockPos p_195484_1_) {
-        return getInventoryAtPosition(p_195484_0_, (double)p_195484_1_.getX() + 0.5D, (double)p_195484_1_.getY() + 0.5D, (double)p_195484_1_.getZ() + 0.5D);
-    }
-
-    /**
-     * Returns the IInventory (if applicable) of the TileEntity at the specified position
-     */
-    @Nullable
-    public static IInventory getInventoryAtPosition(World worldIn, double x, double y, double z) {
-        IInventory iinventory = null;
-        BlockPos blockpos = new BlockPos(x, y, z);
-        BlockState blockstate = worldIn.getBlockState(blockpos);
-        Block block = blockstate.getBlock();
-        if (block instanceof ISidedInventoryProvider) {
-            iinventory = ((ISidedInventoryProvider)block).createInventory(blockstate, worldIn, blockpos);
-        } else if (blockstate.hasTileEntity()) {
-            TileEntity tileentity = worldIn.getTileEntity(blockpos);
-            if (tileentity instanceof IInventory) {
-                iinventory = (IInventory)tileentity;
-                if (iinventory instanceof ChestTileEntity && block instanceof ChestBlock) {
-                    iinventory = ChestBlock.getChestInventory((ChestBlock)block, blockstate, worldIn, blockpos, true);
-                }
-            }
-        }
-
-        if (iinventory == null) {
-            List<Entity> list = worldIn.getEntitiesInAABBexcluding(null, new AxisAlignedBB(x - 0.5D, y - 0.5D, z - 0.5D, x + 0.5D, y + 0.5D, z + 0.5D), EntityPredicates.HAS_INVENTORY);
-            if (!list.isEmpty()) {
-                iinventory = (IInventory)list.get(worldIn.rand.nextInt(list.size()));
-            }
-        }
-
-        return iinventory;
-    }
-
-    private static boolean canCombine(ItemStack stack1, ItemStack stack2) {
-        if (stack1.getItem() != stack2.getItem()) {
-            return false;
-        } else if (stack1.getDamage() != stack2.getDamage()) {
-            return false;
-        } else if (stack1.getCount() > stack1.getMaxStackSize()) {
-            return false;
-        } else {
-            return ItemStack.areItemStackTagsEqual(stack1, stack2);
-        }
     }
 
     /**
@@ -447,17 +378,6 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
         return this.transferCooldown > ServerConfig.WOODEN_HOPPER_COOLDOWN.get();
     }
 
-    @Override
-    @Nonnull
-    protected NonNullList<ItemStack> getItems() {
-        return this.inventory;
-    }
-
-    @Override
-    protected void setItems(@Nonnull NonNullList<ItemStack> itemsIn) {
-        this.inventory = itemsIn;
-    }
-
     public void onEntityCollision(Entity p_200113_1_) {
         if (p_200113_1_ instanceof ItemEntity) {
             BlockPos blockpos = this.getPos();
@@ -474,15 +394,11 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
         return new WoodenHopperContainer(id, player, this);
     }
 
-    //TODO?
-    /*
     @Override
     @Nonnull
     protected net.minecraftforge.items.IItemHandler createUnSidedHandler() {
-        //return new net.minecraftforge.items.VanillaHopperItemHandler(this);
-        return null;
+        return new WoodenHopperItemHandler(this);
     }
-     */
 
     public long getLastUpdateTime() {
         return this.tickedGameTime;

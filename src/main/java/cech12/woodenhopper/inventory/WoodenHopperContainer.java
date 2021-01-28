@@ -4,7 +4,6 @@ import cech12.woodenhopper.api.inventory.WoodenHopperContainerTypes;
 import cech12.woodenhopper.tileentity.WoodenHopperTileEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
@@ -13,11 +12,11 @@ import net.minecraft.util.math.BlockPos;
 import javax.annotation.Nonnull;
 
 public class WoodenHopperContainer extends Container {
-    private final IInventory hopperInventory;
+    private final WoodenHopperTileEntity hopper;
 
-    public WoodenHopperContainer(int id, PlayerInventory playerInventory, IInventory inventory) {
+    public WoodenHopperContainer(int id, PlayerInventory playerInventory, WoodenHopperTileEntity inventory) {
         super(WoodenHopperContainerTypes.WOODEN_HOPPER, id);
-        this.hopperInventory = inventory;
+        this.hopper = inventory;
         assertInventorySize(inventory, 1);
         inventory.openInventory(playerInventory.player);
         //hopper slot
@@ -43,7 +42,7 @@ public class WoodenHopperContainer extends Container {
      */
     @Override
     public boolean canInteractWith(@Nonnull PlayerEntity playerIn) {
-        return this.hopperInventory.isUsableByPlayer(playerIn);
+        return this.hopper.isUsableByPlayer(playerIn);
     }
 
     /**
@@ -58,11 +57,11 @@ public class WoodenHopperContainer extends Container {
         if (slot != null && slot.getHasStack()) {
             ItemStack itemstack1 = slot.getStack();
             itemstack = itemstack1.copy();
-            if (index < this.hopperInventory.getSizeInventory()) {
-                if (!this.mergeItemStack(itemstack1, this.hopperInventory.getSizeInventory(), this.inventorySlots.size(), true)) {
+            if (index < this.hopper.getSizeInventory()) {
+                if (!this.mergeItemStack(itemstack1, this.hopper.getSizeInventory(), this.inventorySlots.size(), true)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (!this.mergeItemStack(itemstack1, 0, this.hopperInventory.getSizeInventory(), false)) {
+            } else if (!this.mergeItemStack(itemstack1, 0, this.hopper.getSizeInventory(), false)) {
                 return ItemStack.EMPTY;
             }
 
@@ -82,6 +81,6 @@ public class WoodenHopperContainer extends Container {
     @Override
     public void onContainerClosed(@Nonnull PlayerEntity playerIn) {
         super.onContainerClosed(playerIn);
-        this.hopperInventory.closeInventory(playerIn);
+        this.hopper.closeInventory(playerIn);
     }
 }
