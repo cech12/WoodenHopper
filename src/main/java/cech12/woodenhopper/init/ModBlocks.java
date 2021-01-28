@@ -19,7 +19,7 @@ public final class ModBlocks {
 
     @SubscribeEvent
     public static void registerBlocks(RegistryEvent.Register<Block> event) {
-        WoodenHopperBlocks.WOODEN_HOPPER = registerBlock("wooden_hopper", ItemGroup.REDSTONE, new WoodenHopperBlock(Block.Properties.create(Material.WOOD).setRequiresTool().hardnessAndResistance(2.5F).sound(SoundType.WOOD).notSolid()));
+        WoodenHopperBlocks.WOODEN_HOPPER = registerBlock("wooden_hopper", ItemGroup.REDSTONE, new WoodenHopperBlock(Block.Properties.create(Material.WOOD).hardnessAndResistance(2.5F).sound(SoundType.WOOD).notSolid()));
     }
 
     public static Block registerBlock(String name, ItemGroup itemGroup, Block block) {
