@@ -27,6 +27,7 @@ import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.LazyOptional; //1.15
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
@@ -36,7 +37,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.Optional;
+//import java.util.Optional; //1.16
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -51,8 +52,8 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
     }
 
     @Override
-    public void read(@Nonnull BlockState state, @Nonnull CompoundNBT nbt) {
-        super.read(state, nbt);
+    public void read(@Nonnull CompoundNBT nbt) { //1.15
+        super.read(nbt); //1.15
         inventory = new ItemStackHandler();
         if (!this.checkLootAndRead(nbt)) {
             this.inventory.deserializeNBT(nbt);
@@ -209,7 +210,7 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
         return stack;
     }
 
-    private static Optional<Pair<IItemHandler, Object>> getItemHandler(IHopper hopper, Direction hopperFacing) {
+    private static LazyOptional<Pair<IItemHandler, Object>> getItemHandler(IHopper hopper, Direction hopperFacing) { //1.15
         double x = hopper.getXPos() + (double) hopperFacing.getXOffset();
         double y = hopper.getYPos() + (double) hopperFacing.getYOffset();
         double z = hopper.getZPos() + (double) hopperFacing.getZOffset();
@@ -236,7 +237,7 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
         return true;
     }
 
-    public static Optional<Pair<IItemHandler, Object>> getItemHandler(World worldIn, double x, double y, double z, final Direction side) {
+    public static LazyOptional<Pair<IItemHandler, Object>> getItemHandler(World worldIn, double x, double y, double z, final Direction side) { //1.15
         int i = MathHelper.floor(x);
         int j = MathHelper.floor(y);
         int k = MathHelper.floor(z);
@@ -249,7 +250,7 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
                         .map(capability -> ImmutablePair.of(capability, tileentity));
             }
         }
-        return Optional.empty();
+        return LazyOptional.empty(); //1.15
     }
 
     private boolean transferItemsOut() {

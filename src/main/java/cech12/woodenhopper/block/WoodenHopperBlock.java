@@ -1,7 +1,8 @@
 package cech12.woodenhopper.block;
 
 import cech12.woodenhopper.tileentity.WoodenHopperTileEntity;
-import net.minecraft.block.AbstractBlock;
+//import net.minecraft.block.AbstractBlock; //1.16
+import net.minecraft.block.Block; //1.15
 import net.minecraft.block.BlockState;
 import net.minecraft.block.HopperBlock;
 import net.minecraft.entity.Entity;
@@ -25,7 +26,7 @@ import javax.annotation.Nonnull;
 
 public class WoodenHopperBlock extends HopperBlock {
 
-    public WoodenHopperBlock(AbstractBlock.Properties properties) {
+    public WoodenHopperBlock(Block.Properties properties) { //1.15
         super(properties);
     }
 
@@ -70,7 +71,7 @@ public class WoodenHopperBlock extends HopperBlock {
 
     @Override
     public void onReplaced(BlockState state, @Nonnull World worldIn, @Nonnull BlockPos pos, BlockState newState, boolean isMoving) {
-        if (!state.isIn(newState.getBlock())) {
+        if (state.getBlock() != newState.getBlock()) { //1.15
             TileEntity tileentity = worldIn.getTileEntity(pos);
             if (tileentity instanceof WoodenHopperTileEntity) {
                 InventoryHelper.dropInventoryItems(worldIn, pos, (WoodenHopperTileEntity)tileentity);
