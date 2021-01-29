@@ -2,7 +2,7 @@
 
 This is a **Minecraft Forge** mod and adds a **Wooden Hopper** to the game.
 
-![Wooden Hopper](https://raw.githubusercontent.com/cech12/WoodenHopper/master/material/logo.png)
+![Wooden Hopper](https://raw.githubusercontent.com/cech12/WoodenHopper/master/material/hopper.png)
 
 It acts like a vanilla hopper but is only half as fast as a vanilla hopper. (16 ticks instead of 8 - configurable) and has only one slot.
 
