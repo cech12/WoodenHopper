@@ -24,12 +24,14 @@ public class WoodenHopperScreen extends ContainerScreen<WoodenHopperContainer> {
         this.playerInventoryTitleY = this.ySize - 94;
     }
 
+    @Override
     public void render(@Nonnull MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         this.renderBackground(matrixStack);
         super.render(matrixStack, mouseX, mouseY, partialTicks);
         this.renderHoveredTooltip(matrixStack, mouseX, mouseY);
     }
 
+    @Override
     protected void drawGuiContainerBackgroundLayer(@Nonnull MatrixStack matrixStack, float partialTicks, int x, int y) {
         if (this.minecraft != null) {
             this.minecraft.getTextureManager().bindTexture(HOPPER_GUI_TEXTURE);
