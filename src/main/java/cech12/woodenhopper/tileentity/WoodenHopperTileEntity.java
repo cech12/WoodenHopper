@@ -155,7 +155,7 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
                 if (!this.isEmpty()) {
                     flag = this.transferItemsOut();
                 }
-                if (!this.isFull()) {
+                if (isNotFull(this.inventory)) {
                     flag |= p_200109_1_.get();
                 }
                 if (flag) {
@@ -166,21 +166,14 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
         }
     }
 
-    private boolean isFull() {
-        ItemStack itemstack = this.inventory.getStackInSlot(0);
-        return !itemstack.isEmpty() && itemstack.getCount() == itemstack.getMaxStackSize();
-    }
-
-    private static ItemStack putStackInInventoryAllSlots(TileEntity source, Object destination, IItemHandler destInventory, ItemStack stack)
-    {
+    private static ItemStack putStackInInventoryAllSlots(TileEntity source, Object destination, IItemHandler destInventory, ItemStack stack) {
         for (int slot = 0; slot < destInventory.getSlots() && !stack.isEmpty(); slot++) {
             stack = insertStack(source, destination, destInventory, stack, slot);
         }
         return stack;
     }
 
-    private static ItemStack insertStack(TileEntity source, Object destination, IItemHandler destInventory, ItemStack stack, int slot)
-    {
+    private static ItemStack insertStack(TileEntity source, Object destination, IItemHandler destInventory, ItemStack stack, int slot) {
         ItemStack itemstack = destInventory.getStackInSlot(slot);
         if (destInventory.insertItem(slot, stack, true).isEmpty()) {
             boolean insertedItem = false;
@@ -220,14 +213,14 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
         return getItemHandler(hopper.getWorld(), x, y, z, hopperFacing.getOpposite());
     }
 
-    private static boolean isFull(IItemHandler itemHandler) {
+    private static boolean isNotFull(IItemHandler itemHandler) {
         for (int slot = 0; slot < itemHandler.getSlots(); slot++) {
             ItemStack stackInSlot = itemHandler.getStackInSlot(slot);
             if (stackInSlot.isEmpty() || stackInSlot.getCount() < itemHandler.getSlotLimit(slot)) {
-                return false;
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     private static boolean isEmpty(IItemHandler itemHandler) {
@@ -267,7 +260,7 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
                 .map(destinationResult -> {
                     IItemHandler itemHandler = destinationResult.getKey();
                     Object destination = destinationResult.getValue();
-                    if (!isFull(itemHandler)) {
+                    if (isNotFull(itemHandler)) {
                         for (int i = 0; i < this.getSizeInventory(); ++i) {
                             if (!this.getStackInSlot(i).isEmpty()) {
                                 ItemStack originalSlotContents = this.getStackInSlot(i).copy();
