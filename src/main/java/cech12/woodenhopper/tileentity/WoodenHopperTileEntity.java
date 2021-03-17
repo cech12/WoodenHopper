@@ -4,12 +4,14 @@ import cech12.woodenhopper.api.tileentity.WoodenHopperTileEntities;
 import cech12.woodenhopper.block.WoodenHopperItemHandler;
 import cech12.woodenhopper.config.ServerConfig;
 import cech12.woodenhopper.inventory.WoodenHopperContainer;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.HopperBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.ISidedInventoryProvider;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
@@ -31,6 +33,7 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.ItemStackHandler;
+import net.minecraftforge.items.wrapper.SidedInvWrapper;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -241,6 +244,11 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
                 return tileentity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side)
                         .map(capability -> ImmutablePair.of(capability, tileentity));
             }
+        }
+        //support vanilla inventory blocks without IItemHandler
+        Block block = state.getBlock();
+        if (block instanceof ISidedInventoryProvider) {
+            return Optional.of(ImmutablePair.of(new SidedInvWrapper(((ISidedInventoryProvider)block).createInventory(state, worldIn, blockpos), side), state));
         }
         return Optional.empty();
     }
