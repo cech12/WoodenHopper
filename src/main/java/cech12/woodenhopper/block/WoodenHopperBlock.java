@@ -1,9 +1,11 @@
 package cech12.woodenhopper.block;
 
+import cech12.woodenhopper.config.ServerConfig;
 import cech12.woodenhopper.tileentity.WoodenHopperTileEntity;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.HopperBlock;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -16,17 +18,36 @@ import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.ToolType;
 import net.minecraftforge.fml.network.NetworkHooks;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.List;
 
 public class WoodenHopperBlock extends HopperBlock {
 
     public WoodenHopperBlock(AbstractBlock.Properties properties) {
         super(properties);
+    }
+
+    @Override
+    @OnlyIn(Dist.CLIENT)
+    public void addInformation(@Nonnull ItemStack stack, @Nullable IBlockReader worldIn, @Nonnull List<ITextComponent> tooltip, @Nonnull ITooltipFlag flagIn) {
+        super.addInformation(stack, worldIn, tooltip, flagIn);
+        if (!ServerConfig.WOODEN_HOPPER_PULL_ITEMS_FROM_WORLD_ENABLED.get()) {
+            tooltip.add(new TranslationTextComponent("block.woodenhopper.wooden_hopper.desc.cannotAbsorbItemsFromWorld").mergeStyle(TextFormatting.RED));
+        }
+        if (!ServerConfig.WOODEN_HOPPER_PULL_ITEMS_FROM_INVENTORIES_ENABLED.get()) {
+            tooltip.add(new TranslationTextComponent("block.woodenhopper.wooden_hopper.desc.cannotAbsorbItemsFromInventories").mergeStyle(TextFormatting.RED));
+        }
     }
 
     @Override
