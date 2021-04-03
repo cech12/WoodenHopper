@@ -1,3 +1,5 @@
 {
-  "block.woodenhopper.wooden_hopper": "Holztrichter"
+  "block.woodenhopper.wooden_hopper": "Holztrichter",
+  "block.woodenhopper.wooden_hopper.desc.cannotAbsorbItemsFromWorld": "Er kann keine über ihm liegende Gegenstände aufnehmen.",
+  "block.woodenhopper.wooden_hopper.desc.cannotAbsorbItemsFromInventories": "Er kann keine Gegenstände aus Inventaren herausziehen."
 }

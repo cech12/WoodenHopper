@@ -290,23 +290,25 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
         return getItemHandler(this, Direction.UP)
                 .map(itemHandlerResult -> {
                     //get item from item handler
-                    IItemHandler handler = itemHandlerResult.getKey();
-                    for (int i = 0; i < handler.getSlots(); i++) {
-                        ItemStack extractItem = handler.extractItem(i, 1, true);
-                        if (!extractItem.isEmpty()) {
-                            for (int j = 0; j < this.getSizeInventory(); j++) {
-                                ItemStack destStack = this.getStackInSlot(j);
-                                if (this.isItemValidForSlot(j, extractItem) && (destStack.isEmpty() || destStack.getCount() < destStack.getMaxStackSize()
-                                        && destStack.getCount() < this.getInventoryStackLimit() && ItemHandlerHelper.canItemStacksStack(extractItem, destStack))) {
-                                    extractItem = handler.extractItem(i, 1, false);
-                                    if (destStack.isEmpty()) {
-                                        this.setInventorySlotContents(j, extractItem);
-                                    } else {
-                                        destStack.grow(1);
-                                        this.setInventorySlotContents(j, destStack);
+                    if (ServerConfig.WOODEN_HOPPER_PULL_ITEMS_FROM_INVENTORIES_ENABLED.get()) {
+                        IItemHandler handler = itemHandlerResult.getKey();
+                        for (int i = 0; i < handler.getSlots(); i++) {
+                            ItemStack extractItem = handler.extractItem(i, 1, true);
+                            if (!extractItem.isEmpty()) {
+                                for (int j = 0; j < this.getSizeInventory(); j++) {
+                                    ItemStack destStack = this.getStackInSlot(j);
+                                    if (this.isItemValidForSlot(j, extractItem) && (destStack.isEmpty() || destStack.getCount() < destStack.getMaxStackSize()
+                                            && destStack.getCount() < this.getInventoryStackLimit() && ItemHandlerHelper.canItemStacksStack(extractItem, destStack))) {
+                                        extractItem = handler.extractItem(i, 1, false);
+                                        if (destStack.isEmpty()) {
+                                            this.setInventorySlotContents(j, extractItem);
+                                        } else {
+                                            destStack.grow(1);
+                                            this.setInventorySlotContents(j, destStack);
+                                        }
+                                        this.markDirty();
+                                        return true;
                                     }
-                                    this.markDirty();
-                                    return true;
                                 }
                             }
                         }
@@ -314,9 +316,11 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
                     return false;
                 }).orElseGet(() -> {
                     //capture item
-                    for (ItemEntity itementity : getCaptureItems(hopper)) {
-                        if (captureItem(hopper, itementity)) {
-                            return true;
+                    if (ServerConfig.WOODEN_HOPPER_PULL_ITEMS_FROM_WORLD_ENABLED.get()) {
+                        for (ItemEntity itementity : getCaptureItems(hopper)) {
+                            if (captureItem(hopper, itementity)) {
+                                return true;
+                            }
                         }
                     }
                     return false;
@@ -379,13 +383,14 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
     }
 
     public void onEntityCollision(Entity p_200113_1_) {
-        if (p_200113_1_ instanceof ItemEntity) {
-            BlockPos blockpos = this.getPos();
-            if (VoxelShapes.compare(VoxelShapes.create(p_200113_1_.getBoundingBox().offset((double)(-blockpos.getX()), (double)(-blockpos.getY()), (double)(-blockpos.getZ()))), this.getCollectionArea(), IBooleanFunction.AND)) {
-                this.updateHopper(() -> captureItem(this, (ItemEntity)p_200113_1_));
+        if (ServerConfig.WOODEN_HOPPER_PULL_ITEMS_FROM_WORLD_ENABLED.get()) {
+            if (p_200113_1_ instanceof ItemEntity) {
+                BlockPos blockpos = this.getPos();
+                if (VoxelShapes.compare(VoxelShapes.create(p_200113_1_.getBoundingBox().offset((-blockpos.getX()), (-blockpos.getY()), (-blockpos.getZ()))), this.getCollectionArea(), IBooleanFunction.AND)) {
+                    this.updateHopper(() -> captureItem(this, (ItemEntity)p_200113_1_));
+                }
             }
         }
-
     }
 
     @Override
