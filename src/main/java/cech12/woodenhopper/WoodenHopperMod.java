@@ -39,7 +39,7 @@ public class WoodenHopperMod {
     @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     public static void onClientRegister(FMLClientSetupEvent event) {
-        ScreenManager.registerFactory((ContainerType<WoodenHopperContainer>) WOODEN_HOPPER, WoodenHopperScreen::new);
+        ScreenManager.register((ContainerType<WoodenHopperContainer>) WOODEN_HOPPER, WoodenHopperScreen::new);
     }
 
 }

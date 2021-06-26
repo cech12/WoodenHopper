@@ -20,24 +20,24 @@ public class WoodenHopperScreen extends ContainerScreen<WoodenHopperContainer> {
     public WoodenHopperScreen(WoodenHopperContainer screenContainer, PlayerInventory inv, ITextComponent titleIn) {
         super(screenContainer, inv, titleIn);
         this.passEvents = false;
-        this.ySize = 133;
-        this.playerInventoryTitleY = this.ySize - 94;
+        this.imageHeight = 133;
+        this.inventoryLabelY = this.imageHeight - 94;
     }
 
     @Override
     public void render(@Nonnull MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         this.renderBackground(matrixStack);
         super.render(matrixStack, mouseX, mouseY, partialTicks);
-        this.renderHoveredTooltip(matrixStack, mouseX, mouseY);
+        this.renderTooltip(matrixStack, mouseX, mouseY);
     }
 
     @Override
-    protected void drawGuiContainerBackgroundLayer(@Nonnull MatrixStack matrixStack, float partialTicks, int x, int y) {
+    protected void renderBg(@Nonnull MatrixStack matrixStack, float partialTicks, int x, int y) {
         if (this.minecraft != null) {
-            this.minecraft.getTextureManager().bindTexture(HOPPER_GUI_TEXTURE);
-            int i = (this.width - this.xSize) / 2;
-            int j = (this.height - this.ySize) / 2;
-            this.blit(matrixStack, i, j, 0, 0, this.xSize, this.ySize);
+            this.minecraft.getTextureManager().bind(HOPPER_GUI_TEXTURE);
+            int i = (this.width - this.imageWidth) / 2;
+            int j = (this.height - this.imageHeight) / 2;
+            this.blit(matrixStack, i, j, 0, 0, this.imageWidth, this.imageHeight);
         }
     }
 }
