@@ -2,7 +2,7 @@ package cech12.woodenhopper.block;
 
 import cech12.woodenhopper.config.ServerConfig;
 import cech12.woodenhopper.tileentity.WoodenHopperTileEntity;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.wrapper.InvWrapper;
 
 import javax.annotation.Nonnull;

@@ -1,9 +1,9 @@
 package cech12.woodenhopper.api.tileentity;
 
-import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 
 public class WoodenHopperTileEntities {
 
-    public static TileEntityType<?> WOODEN_HOPPER;
+    public static BlockEntityType<?> WOODEN_HOPPER;
 
 }

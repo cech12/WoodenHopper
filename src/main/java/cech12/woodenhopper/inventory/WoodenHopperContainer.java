@@ -2,19 +2,19 @@ package cech12.woodenhopper.inventory;
 
 import cech12.woodenhopper.api.inventory.WoodenHopperContainerTypes;
 import cech12.woodenhopper.tileentity.WoodenHopperTileEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.Slot;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.BlockPos;
 
 import javax.annotation.Nonnull;
 
-public class WoodenHopperContainer extends Container {
+public class WoodenHopperContainer extends AbstractContainerMenu {
     private final WoodenHopperTileEntity hopper;
 
-    public WoodenHopperContainer(int id, PlayerInventory playerInventory, WoodenHopperTileEntity inventory) {
+    public WoodenHopperContainer(int id, Inventory playerInventory, WoodenHopperTileEntity inventory) {
         super(WoodenHopperContainerTypes.WOODEN_HOPPER, id);
         this.hopper = inventory;
         checkContainerSize(inventory, 1);
@@ -33,7 +33,7 @@ public class WoodenHopperContainer extends Container {
         }
     }
 
-    public WoodenHopperContainer(int id, PlayerInventory playerInventoryIn, BlockPos pos) {
+    public WoodenHopperContainer(int id, Inventory playerInventoryIn, BlockPos pos) {
         this(id, playerInventoryIn, (WoodenHopperTileEntity) playerInventoryIn.player.level.getBlockEntity(pos));
     }
 
@@ -41,7 +41,7 @@ public class WoodenHopperContainer extends Container {
      * Determines whether supplied player can use this container
      */
     @Override
-    public boolean stillValid(@Nonnull PlayerEntity playerIn) {
+    public boolean stillValid(@Nonnull Player playerIn) {
         return this.hopper.stillValid(playerIn);
     }
 
@@ -51,7 +51,7 @@ public class WoodenHopperContainer extends Container {
      */
     @Override
     @Nonnull
-    public ItemStack quickMoveStack(@Nonnull PlayerEntity playerIn, int index) {
+    public ItemStack quickMoveStack(@Nonnull Player playerIn, int index) {
         ItemStack itemstack = ItemStack.EMPTY;
         Slot slot = this.slots.get(index);
         if (slot != null && slot.hasItem()) {
@@ -79,7 +79,7 @@ public class WoodenHopperContainer extends Container {
      * Called when the container is closed.
      */
     @Override
-    public void removed(@Nonnull PlayerEntity playerIn) {
+    public void removed(@Nonnull Player playerIn) {
         super.removed(playerIn);
         this.hopper.stopOpen(playerIn);
     }
