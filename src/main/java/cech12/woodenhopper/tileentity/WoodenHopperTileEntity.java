@@ -54,10 +54,10 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
     }
 
     @Override
-    public void read(@Nonnull BlockState state, @Nonnull CompoundNBT nbt) {
-        super.read(state, nbt);
+    public void load(@Nonnull BlockState state, @Nonnull CompoundNBT nbt) {
+        super.load(state, nbt);
         inventory = new ItemStackHandler();
-        if (!this.checkLootAndRead(nbt)) {
+        if (!this.tryLoadLootTable(nbt)) {
             this.inventory.deserializeNBT(nbt);
         }
         this.transferCooldown = nbt.getInt("TransferCooldown");
@@ -65,9 +65,9 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
 
     @Override
     @Nonnull
-    public CompoundNBT write(@Nonnull CompoundNBT compound) {
-        super.write(compound);
-        if (!this.checkLootAndWrite(compound)) {
+    public CompoundNBT save(@Nonnull CompoundNBT compound) {
+        super.save(compound);
+        if (!this.trySaveLootTable(compound)) {
             compound.merge(this.inventory.serializeNBT());
         }
         compound.putInt("TransferCooldown", this.transferCooldown);
@@ -78,7 +78,7 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
      * Returns the number of slots in the inventory.
      */
     @Override
-    public int getSizeInventory() {
+    public int getContainerSize() {
         return this.inventory.getSlots();
     }
 
@@ -91,7 +91,7 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
     @Override
     protected void setItems(@Nonnull NonNullList<ItemStack> itemsIn) {
         this.inventory.setStackInSlot(0, itemsIn.get(0));
-        this.markDirty();
+        this.setChanged();
     }
 
     /**
@@ -99,10 +99,10 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
      */
     @Override
     @Nonnull
-    public ItemStack decrStackSize(int index, int count) {
-        this.fillWithLoot(null);
+    public ItemStack removeItem(int index, int count) {
+        this.unpackLootTable(null);
         ItemStack stack = this.inventory.extractItem(index, count, false);
-        this.markDirty();
+        this.setChanged();
         return stack;
     }
 
@@ -111,11 +111,11 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
      */
     @Override
     @Nonnull
-    public ItemStack removeStackFromSlot(int index) {
-        this.fillWithLoot(null);
+    public ItemStack removeItemNoUpdate(int index) {
+        this.unpackLootTable(null);
         ItemStack stack = this.inventory.getStackInSlot(index);
         this.inventory.setStackInSlot(index, ItemStack.EMPTY);
-        this.markDirty();
+        this.setChanged();
         return stack;
     }
 
@@ -123,10 +123,10 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
      * Sets the given item stack to the specified slot in the inventory (can be crafting or armor sections).
      */
     @Override
-    public void setInventorySlotContents(int index, @Nonnull ItemStack stack) {
-        this.fillWithLoot(null);
+    public void setItem(int index, @Nonnull ItemStack stack) {
+        this.unpackLootTable(null);
         this.inventory.setStackInSlot(index, stack);
-        this.markDirty();
+        this.setChanged();
     }
 
     @Override
@@ -137,9 +137,9 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
 
     @Override
     public void tick() {
-        if (this.world != null && !this.world.isRemote) {
+        if (this.level != null && !this.level.isClientSide) {
             this.transferCooldown--;
-            this.tickedGameTime = this.world.getGameTime();
+            this.tickedGameTime = this.level.getGameTime();
             if (!this.isOnTransferCooldown()) {
                 this.setTransferCooldown(0);
                 this.updateHopper(() -> pullItems(this));
@@ -148,8 +148,8 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
     }
 
     private void updateHopper(Supplier<Boolean> p_200109_1_) {
-        if (this.world != null && !this.world.isRemote) {
-            if (!this.isOnTransferCooldown() && this.getBlockState().get(HopperBlock.ENABLED)) {
+        if (this.level != null && !this.level.isClientSide) {
+            if (!this.isOnTransferCooldown() && this.getBlockState().getValue(HopperBlock.ENABLED)) {
                 boolean flag = false;
                 if (!this.isEmpty()) {
                     flag = this.transferItemsOut();
@@ -159,7 +159,7 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
                 }
                 if (flag) {
                     this.setTransferCooldown(ServerConfig.WOODEN_HOPPER_COOLDOWN.get());
-                    this.markDirty();
+                    this.setChanged();
                 }
             }
         }
@@ -206,10 +206,10 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
     }
 
     private static Optional<Pair<IItemHandler, Object>> getItemHandler(IHopper hopper, Direction hopperFacing) {
-        double x = hopper.getXPos() + (double) hopperFacing.getXOffset();
-        double y = hopper.getYPos() + (double) hopperFacing.getYOffset();
-        double z = hopper.getZPos() + (double) hopperFacing.getZOffset();
-        return getItemHandler(hopper.getWorld(), x, y, z, hopperFacing.getOpposite());
+        double x = hopper.getLevelX() + (double) hopperFacing.getStepX();
+        double y = hopper.getLevelY() + (double) hopperFacing.getStepY();
+        double z = hopper.getLevelZ() + (double) hopperFacing.getStepZ();
+        return getItemHandler(hopper.getLevel(), x, y, z, hopperFacing.getOpposite());
     }
 
     private static boolean isNotFull(IItemHandler itemHandler) {
@@ -239,7 +239,7 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
         BlockPos blockpos = new BlockPos(i, j, k);
         BlockState state = worldIn.getBlockState(blockpos);
         if (state.hasTileEntity()) {
-            TileEntity tileentity = worldIn.getTileEntity(blockpos);
+            TileEntity tileentity = worldIn.getBlockEntity(blockpos);
             if (tileentity != null) {
                 return tileentity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side)
                         .map(capability -> ImmutablePair.of(capability, tileentity));
@@ -248,27 +248,27 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
         //support vanilla inventory blocks without IItemHandler
         Block block = state.getBlock();
         if (block instanceof ISidedInventoryProvider) {
-            return Optional.of(ImmutablePair.of(new SidedInvWrapper(((ISidedInventoryProvider)block).createInventory(state, worldIn, blockpos), side), state));
+            return Optional.of(ImmutablePair.of(new SidedInvWrapper(((ISidedInventoryProvider)block).getContainer(state, worldIn, blockpos), side), state));
         }
         return Optional.empty();
     }
 
     private boolean transferItemsOut() {
-        Direction hopperFacing = this.getBlockState().get(HopperBlock.FACING);
+        Direction hopperFacing = this.getBlockState().getValue(HopperBlock.FACING);
         return getItemHandler(this, hopperFacing)
                 .map(destinationResult -> {
                     IItemHandler itemHandler = destinationResult.getKey();
                     Object destination = destinationResult.getValue();
                     if (isNotFull(itemHandler)) {
-                        for (int i = 0; i < this.getSizeInventory(); ++i) {
-                            if (!this.getStackInSlot(i).isEmpty()) {
-                                ItemStack originalSlotContents = this.getStackInSlot(i).copy();
-                                ItemStack insertStack = this.decrStackSize(i, 1);
+                        for (int i = 0; i < this.getContainerSize(); ++i) {
+                            if (!this.getItem(i).isEmpty()) {
+                                ItemStack originalSlotContents = this.getItem(i).copy();
+                                ItemStack insertStack = this.removeItem(i, 1);
                                 ItemStack remainder = putStackInInventoryAllSlots(this, destination, itemHandler, insertStack);
                                 if (remainder.isEmpty()) {
                                     return true;
                                 }
-                                this.setInventorySlotContents(i, originalSlotContents);
+                                this.setItem(i, originalSlotContents);
                             }
                         }
 
@@ -294,18 +294,18 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
                         for (int i = 0; i < handler.getSlots(); i++) {
                             ItemStack extractItem = handler.extractItem(i, 1, true);
                             if (!extractItem.isEmpty()) {
-                                for (int j = 0; j < this.getSizeInventory(); j++) {
-                                    ItemStack destStack = this.getStackInSlot(j);
-                                    if (this.isItemValidForSlot(j, extractItem) && (destStack.isEmpty() || destStack.getCount() < destStack.getMaxStackSize()
-                                            && destStack.getCount() < this.getInventoryStackLimit() && ItemHandlerHelper.canItemStacksStack(extractItem, destStack))) {
+                                for (int j = 0; j < this.getContainerSize(); j++) {
+                                    ItemStack destStack = this.getItem(j);
+                                    if (this.canPlaceItem(j, extractItem) && (destStack.isEmpty() || destStack.getCount() < destStack.getMaxStackSize()
+                                            && destStack.getCount() < this.getMaxStackSize() && ItemHandlerHelper.canItemStacksStack(extractItem, destStack))) {
                                         extractItem = handler.extractItem(i, 1, false);
                                         if (destStack.isEmpty()) {
-                                            this.setInventorySlotContents(j, extractItem);
+                                            this.setItem(j, extractItem);
                                         } else {
                                             destStack.grow(1);
-                                            this.setInventorySlotContents(j, destStack);
+                                            this.setItem(j, destStack);
                                         }
-                                        this.markDirty();
+                                        this.setChanged();
                                         return true;
                                     }
                                 }
@@ -340,8 +340,8 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
     }
 
     public static List<ItemEntity> getCaptureItems(IHopper p_200115_0_) {
-        return p_200115_0_.getCollectionArea().toBoundingBoxList().stream().flatMap((p_200110_1_) -> {
-            return p_200115_0_.getWorld().getEntitiesWithinAABB(ItemEntity.class, p_200110_1_.offset(p_200115_0_.getXPos() - 0.5D, p_200115_0_.getYPos() - 0.5D, p_200115_0_.getZPos() - 0.5D), EntityPredicates.IS_ALIVE).stream();
+        return p_200115_0_.getSuckShape().toAabbs().stream().flatMap((p_200110_1_) -> {
+            return p_200115_0_.getLevel().getEntitiesOfClass(ItemEntity.class, p_200110_1_.move(p_200115_0_.getLevelX() - 0.5D, p_200115_0_.getLevelY() - 0.5D, p_200115_0_.getLevelZ() - 0.5D), EntityPredicates.ENTITY_STILL_ALIVE).stream();
         }).collect(Collectors.toList());
     }
 
@@ -349,24 +349,24 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
      * Gets the world X position for this hopper entity.
      */
     @Override
-    public double getXPos() {
-        return (double)this.pos.getX() + 0.5D;
+    public double getLevelX() {
+        return (double)this.worldPosition.getX() + 0.5D;
     }
 
     /**
      * Gets the world Y position for this hopper entity.
      */
     @Override
-    public double getYPos() {
-        return (double)this.pos.getY() + 0.5D;
+    public double getLevelY() {
+        return (double)this.worldPosition.getY() + 0.5D;
     }
 
     /**
      * Gets the world Z position for this hopper entity.
      */
     @Override
-    public double getZPos() {
-        return (double)this.pos.getZ() + 0.5D;
+    public double getLevelZ() {
+        return (double)this.worldPosition.getZ() + 0.5D;
     }
 
     public void setTransferCooldown(int ticks) {
@@ -384,8 +384,8 @@ public class WoodenHopperTileEntity extends LockableLootTileEntity implements IH
     public void onEntityCollision(Entity p_200113_1_) {
         if (ServerConfig.WOODEN_HOPPER_PULL_ITEMS_FROM_WORLD_ENABLED.get()) {
             if (p_200113_1_ instanceof ItemEntity) {
-                BlockPos blockpos = this.getPos();
-                if (VoxelShapes.compare(VoxelShapes.create(p_200113_1_.getBoundingBox().offset((-blockpos.getX()), (-blockpos.getY()), (-blockpos.getZ()))), this.getCollectionArea(), IBooleanFunction.AND)) {
+                BlockPos blockpos = this.getBlockPos();
+                if (VoxelShapes.joinIsNotEmpty(VoxelShapes.create(p_200113_1_.getBoundingBox().move((-blockpos.getX()), (-blockpos.getY()), (-blockpos.getZ()))), this.getSuckShape(), IBooleanFunction.AND)) {
                     this.updateHopper(() -> captureItem(this, (ItemEntity)p_200113_1_));
                 }
             }

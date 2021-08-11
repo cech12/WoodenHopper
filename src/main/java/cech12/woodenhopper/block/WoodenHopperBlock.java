@@ -40,13 +40,13 @@ public class WoodenHopperBlock extends HopperBlock {
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void addInformation(@Nonnull ItemStack stack, @Nullable IBlockReader worldIn, @Nonnull List<ITextComponent> tooltip, @Nonnull ITooltipFlag flagIn) {
-        super.addInformation(stack, worldIn, tooltip, flagIn);
+    public void appendHoverText(@Nonnull ItemStack stack, @Nullable IBlockReader worldIn, @Nonnull List<ITextComponent> tooltip, @Nonnull ITooltipFlag flagIn) {
+        super.appendHoverText(stack, worldIn, tooltip, flagIn);
         if (!ServerConfig.WOODEN_HOPPER_PULL_ITEMS_FROM_WORLD_ENABLED.get()) {
-            tooltip.add(new TranslationTextComponent("block.woodenhopper.wooden_hopper.desc.cannotAbsorbItemsFromWorld").mergeStyle(TextFormatting.RED));
+            tooltip.add(new TranslationTextComponent("block.woodenhopper.wooden_hopper.desc.cannotAbsorbItemsFromWorld").withStyle(TextFormatting.RED));
         }
         if (!ServerConfig.WOODEN_HOPPER_PULL_ITEMS_FROM_INVENTORIES_ENABLED.get()) {
-            tooltip.add(new TranslationTextComponent("block.woodenhopper.wooden_hopper.desc.cannotAbsorbItemsFromInventories").mergeStyle(TextFormatting.RED));
+            tooltip.add(new TranslationTextComponent("block.woodenhopper.wooden_hopper.desc.cannotAbsorbItemsFromInventories").withStyle(TextFormatting.RED));
         }
     }
 
@@ -56,7 +56,7 @@ public class WoodenHopperBlock extends HopperBlock {
     }
 
     @Override
-    public TileEntity createNewTileEntity(@Nonnull IBlockReader worldIn) {
+    public TileEntity newBlockEntity(@Nonnull IBlockReader worldIn) {
         return new WoodenHopperTileEntity();
     }
 
@@ -64,46 +64,46 @@ public class WoodenHopperBlock extends HopperBlock {
      * Called by ItemBlocks after a block is set in the world, to allow post-place logic
      */
     @Override
-    public void onBlockPlacedBy(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull BlockState state, @Nonnull LivingEntity placer, ItemStack stack) {
-        if (stack.hasDisplayName()) {
-            TileEntity tileentity = worldIn.getTileEntity(pos);
+    public void setPlacedBy(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull BlockState state, @Nonnull LivingEntity placer, ItemStack stack) {
+        if (stack.hasCustomHoverName()) {
+            TileEntity tileentity = worldIn.getBlockEntity(pos);
             if (tileentity instanceof WoodenHopperTileEntity) {
-                ((WoodenHopperTileEntity)tileentity).setCustomName(stack.getDisplayName());
+                ((WoodenHopperTileEntity)tileentity).setCustomName(stack.getHoverName());
             }
         }
     }
 
     @Override
     @Nonnull
-    public ActionResultType onBlockActivated(@Nonnull BlockState state, World worldIn, @Nonnull BlockPos pos, @Nonnull PlayerEntity player,
+    public ActionResultType use(@Nonnull BlockState state, World worldIn, @Nonnull BlockPos pos, @Nonnull PlayerEntity player,
                                              @Nonnull Hand handIn, @Nonnull BlockRayTraceResult hit) {
-        if (worldIn.isRemote) {
+        if (worldIn.isClientSide) {
             return ActionResultType.SUCCESS;
         } else {
-            TileEntity tileentity = worldIn.getTileEntity(pos);
+            TileEntity tileentity = worldIn.getBlockEntity(pos);
             if (tileentity instanceof WoodenHopperTileEntity) {
                 NetworkHooks.openGui((ServerPlayerEntity) player, (WoodenHopperTileEntity) tileentity, pos);
-                player.addStat(Stats.INSPECT_HOPPER);
+                player.awardStat(Stats.INSPECT_HOPPER);
             }
             return ActionResultType.CONSUME;
         }
     }
 
     @Override
-    public void onReplaced(BlockState state, @Nonnull World worldIn, @Nonnull BlockPos pos, BlockState newState, boolean isMoving) {
-        if (!state.isIn(newState.getBlock())) {
-            TileEntity tileentity = worldIn.getTileEntity(pos);
+    public void onRemove(BlockState state, @Nonnull World worldIn, @Nonnull BlockPos pos, BlockState newState, boolean isMoving) {
+        if (!state.is(newState.getBlock())) {
+            TileEntity tileentity = worldIn.getBlockEntity(pos);
             if (tileentity instanceof WoodenHopperTileEntity) {
-                InventoryHelper.dropInventoryItems(worldIn, pos, (WoodenHopperTileEntity)tileentity);
-                worldIn.updateComparatorOutputLevel(pos, this);
+                InventoryHelper.dropContents(worldIn, pos, (WoodenHopperTileEntity)tileentity);
+                worldIn.updateNeighbourForOutputSignal(pos, this);
             }
-            super.onReplaced(state, worldIn, pos, newState, isMoving);
+            super.onRemove(state, worldIn, pos, newState, isMoving);
         }
     }
 
     @Override
-    public void onEntityCollision(@Nonnull BlockState state, World worldIn, @Nonnull BlockPos pos, @Nonnull Entity entityIn) {
-        TileEntity tileentity = worldIn.getTileEntity(pos);
+    public void entityInside(@Nonnull BlockState state, World worldIn, @Nonnull BlockPos pos, @Nonnull Entity entityIn) {
+        TileEntity tileentity = worldIn.getBlockEntity(pos);
         if (tileentity instanceof WoodenHopperTileEntity) {
             ((WoodenHopperTileEntity)tileentity).onEntityCollision(entityIn);
         }
