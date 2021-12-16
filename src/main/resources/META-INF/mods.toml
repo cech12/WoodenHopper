@@ -15,7 +15,7 @@ license="The MIT License (MIT)"
 [[dependencies.woodenhopper]]
     modId="forge"
     mandatory=true
-    versionRange="[31.2.47,)"
+    versionRange="[31.2.57,32)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.woodenhopper]]
