@@ -207,26 +207,6 @@ public class WoodenHopperTileEntity extends RandomizableContainerBlockEntity imp
         return getItemHandler(hopper.getLevel(), x, y, z, hopperFacing.getOpposite());
     }
 
-    private static boolean isNotFull(IItemHandler itemHandler) {
-        for (int slot = 0; slot < itemHandler.getSlots(); slot++) {
-            ItemStack stackInSlot = itemHandler.getStackInSlot(slot);
-            if (stackInSlot.isEmpty() || stackInSlot.getCount() < itemHandler.getSlotLimit(slot)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static boolean isEmpty(IItemHandler itemHandler) {
-        for (int slot = 0; slot < itemHandler.getSlots(); slot++) {
-            ItemStack stackInSlot = itemHandler.getStackInSlot(slot);
-            if (stackInSlot.getCount() > 0) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     public static Optional<Pair<IItemHandler, Object>> getItemHandler(Level worldIn, double x, double y, double z, final Direction side) {
         int i = Mth.floor(x);
         int j = Mth.floor(y);
@@ -246,6 +226,26 @@ public class WoodenHopperTileEntity extends RandomizableContainerBlockEntity imp
             return Optional.of(ImmutablePair.of(new SidedInvWrapper(((WorldlyContainerHolder)block).getContainer(state, worldIn, blockpos), side), state));
         }
         return Optional.empty();
+    }
+
+    private static boolean isNotFull(IItemHandler itemHandler) {
+        for (int slot = 0; slot < itemHandler.getSlots(); slot++) {
+            ItemStack stackInSlot = itemHandler.getStackInSlot(slot);
+            if (stackInSlot.isEmpty() || stackInSlot.getCount() < itemHandler.getSlotLimit(slot)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isEmpty(IItemHandler itemHandler) {
+        for (int slot = 0; slot < itemHandler.getSlots(); slot++) {
+            ItemStack stackInSlot = itemHandler.getStackInSlot(slot);
+            if (stackInSlot.getCount() > 0) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private boolean transferItemsOut() {
