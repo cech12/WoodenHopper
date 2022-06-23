@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Forge Recommended Versioning](https://mcforge.readthedocs.io/en/latest/conventions/versioning/).
 
+## [1.18.1-1.2.2.0] - 2022-01-16
+### Added
+- Support filling and emptying for entities with item handlers (Chest Minecart ...)
+
 ## [1.18.1-1.2.1.0] - 2022-01-16
 ### Changed
 - Update mod to Forge 1.18.1-39.0.0 (fix Log4J security issue)
