@@ -1,7 +1,7 @@
 package cech12.woodenhopper.block;
 
 import cech12.woodenhopper.config.ServerConfig;
-import cech12.woodenhopper.tileentity.WoodenHopperTileEntity;
+import cech12.woodenhopper.tileentity.WoodenHopperBlockEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.wrapper.InvWrapper;
 
@@ -9,9 +9,9 @@ import javax.annotation.Nonnull;
 
 public class WoodenHopperItemHandler extends InvWrapper
 {
-    private final WoodenHopperTileEntity hopper;
+    private final WoodenHopperBlockEntity hopper;
 
-    public WoodenHopperItemHandler(WoodenHopperTileEntity hopper)
+    public WoodenHopperItemHandler(WoodenHopperBlockEntity hopper)
     {
         super(hopper);
         this.hopper = hopper;

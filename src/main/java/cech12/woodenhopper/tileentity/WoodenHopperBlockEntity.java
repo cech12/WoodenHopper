@@ -1,6 +1,6 @@
 package cech12.woodenhopper.tileentity;
 
-import cech12.woodenhopper.api.tileentity.WoodenHopperTileEntities;
+import cech12.woodenhopper.api.blockentity.WoodenHopperBlockEntities;
 import cech12.woodenhopper.block.WoodenHopperItemHandler;
 import cech12.woodenhopper.config.ServerConfig;
 import cech12.woodenhopper.inventory.WoodenHopperContainer;
@@ -25,7 +25,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
@@ -41,14 +40,14 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class WoodenHopperTileEntity extends RandomizableContainerBlockEntity implements Hopper {
+public class WoodenHopperBlockEntity extends RandomizableContainerBlockEntity implements Hopper {
 
     private ItemStackHandler inventory = new ItemStackHandler();
     private int transferCooldown = -1;
     private long tickedGameTime;
 
-    public WoodenHopperTileEntity(BlockPos pos, BlockState state) {
-        super(WoodenHopperTileEntities.WOODEN_HOPPER, pos, state);
+    public WoodenHopperBlockEntity(BlockPos pos, BlockState state) {
+        super(WoodenHopperBlockEntities.WOODEN_HOPPER.get(), pos, state);
     }
 
     @Override
@@ -128,10 +127,10 @@ public class WoodenHopperTileEntity extends RandomizableContainerBlockEntity imp
     @Override
     @Nonnull
     protected Component getDefaultName() {
-        return new TranslatableComponent("block.woodenhopper.wooden_hopper");
+        return Component.translatable("block.woodenhopper.wooden_hopper");
     }
 
-    public static void tick(Level level, BlockPos pos, BlockState state, WoodenHopperTileEntity entity) {
+    public static void tick(Level level, BlockPos pos, BlockState state, WoodenHopperBlockEntity entity) {
         if (level != null && !level.isClientSide) {
             entity.transferCooldown--;
             entity.tickedGameTime = level.getGameTime();
@@ -182,12 +181,12 @@ public class WoodenHopperTileEntity extends RandomizableContainerBlockEntity imp
                 insertedItem = originalSize < stack.getCount();
             }
             if (insertedItem) {
-                if (inventoryWasEmpty && destination instanceof WoodenHopperTileEntity) {
-                    WoodenHopperTileEntity destinationHopper = (WoodenHopperTileEntity)destination;
+                if (inventoryWasEmpty && destination instanceof WoodenHopperBlockEntity) {
+                    WoodenHopperBlockEntity destinationHopper = (WoodenHopperBlockEntity)destination;
                     if (!destinationHopper.mayTransfer()) {
                         int k = 0;
-                        if (source instanceof WoodenHopperTileEntity) {
-                            if (destinationHopper.getLastUpdateTime() >= ((WoodenHopperTileEntity) source).getLastUpdateTime()) {
+                        if (source instanceof WoodenHopperBlockEntity) {
+                            if (destinationHopper.getLastUpdateTime() >= ((WoodenHopperBlockEntity) source).getLastUpdateTime()) {
                                 k = 1;
                             }
                         }
@@ -200,7 +199,7 @@ public class WoodenHopperTileEntity extends RandomizableContainerBlockEntity imp
         return stack;
     }
 
-    private static Optional<Pair<IItemHandler, Object>> getItemHandler(WoodenHopperTileEntity hopper, Direction hopperFacing) {
+    private static Optional<Pair<IItemHandler, Object>> getItemHandler(WoodenHopperBlockEntity hopper, Direction hopperFacing) {
         double x = hopper.getLevelX() + (double) hopperFacing.getStepX();
         double y = hopper.getLevelY() + (double) hopperFacing.getStepY();
         double z = hopper.getLevelZ() + (double) hopperFacing.getStepZ();
@@ -280,7 +279,7 @@ public class WoodenHopperTileEntity extends RandomizableContainerBlockEntity imp
      * @param hopper the hopper in question
      * @return whether any items were successfully added to the hopper
      */
-    public static boolean pullItems(WoodenHopperTileEntity hopper) {
+    public static boolean pullItems(WoodenHopperBlockEntity hopper) {
         return getItemHandler(hopper, Direction.UP)
                 .map(itemHandlerResult -> {
                     //get item from item handler
@@ -321,7 +320,7 @@ public class WoodenHopperTileEntity extends RandomizableContainerBlockEntity imp
                 });
     }
 
-    public static boolean captureItem(WoodenHopperTileEntity hopper, ItemEntity p_200114_1_) {
+    public static boolean captureItem(WoodenHopperBlockEntity hopper, ItemEntity p_200114_1_) {
         boolean flag = false;
         ItemStack itemstack = p_200114_1_.getItem().copy();
         ItemStack itemstack1 = putStackInInventoryAllSlots(null, hopper, hopper.inventory, itemstack);
@@ -334,7 +333,7 @@ public class WoodenHopperTileEntity extends RandomizableContainerBlockEntity imp
         return flag;
     }
 
-    public static List<ItemEntity> getCaptureItems(WoodenHopperTileEntity p_200115_0_) {
+    public static List<ItemEntity> getCaptureItems(WoodenHopperBlockEntity p_200115_0_) {
         return p_200115_0_.getSuckShape().toAabbs().stream().flatMap((p_200110_1_) -> {
             return p_200115_0_.getLevel().getEntitiesOfClass(ItemEntity.class, p_200110_1_.move(p_200115_0_.getLevelX() - 0.5D, p_200115_0_.getLevelY() - 0.5D, p_200115_0_.getLevelZ() - 0.5D), EntitySelector.ENTITY_STILL_ALIVE).stream();
         }).collect(Collectors.toList());

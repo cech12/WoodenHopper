@@ -1,8 +1,8 @@
 package cech12.woodenhopper.block;
 
-import cech12.woodenhopper.api.tileentity.WoodenHopperTileEntities;
+import cech12.woodenhopper.api.blockentity.WoodenHopperBlockEntities;
 import cech12.woodenhopper.config.ServerConfig;
-import cech12.woodenhopper.tileentity.WoodenHopperTileEntity;
+import cech12.woodenhopper.tileentity.WoodenHopperBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -23,7 +23,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
@@ -45,22 +44,22 @@ public class WoodenHopperBlock extends HopperBlock {
     public void appendHoverText(@Nonnull ItemStack stack, @Nullable BlockGetter worldIn, @Nonnull List<Component> tooltip, @Nonnull TooltipFlag flagIn) {
         super.appendHoverText(stack, worldIn, tooltip, flagIn);
         if (!ServerConfig.WOODEN_HOPPER_PULL_ITEMS_FROM_WORLD_ENABLED.get()) {
-            tooltip.add(new TranslatableComponent("block.woodenhopper.wooden_hopper.desc.cannotAbsorbItemsFromWorld").withStyle(ChatFormatting.RED));
+            tooltip.add(Component.translatable("block.woodenhopper.wooden_hopper.desc.cannotAbsorbItemsFromWorld").withStyle(ChatFormatting.RED));
         }
         if (!ServerConfig.WOODEN_HOPPER_PULL_ITEMS_FROM_INVENTORIES_ENABLED.get()) {
-            tooltip.add(new TranslatableComponent("block.woodenhopper.wooden_hopper.desc.cannotAbsorbItemsFromInventories").withStyle(ChatFormatting.RED));
+            tooltip.add(Component.translatable("block.woodenhopper.wooden_hopper.desc.cannotAbsorbItemsFromInventories").withStyle(ChatFormatting.RED));
         }
     }
 
     @Override
     public BlockEntity newBlockEntity(@Nonnull BlockPos pos, @Nonnull BlockState state) {
-        return new WoodenHopperTileEntity(pos, state);
+        return new WoodenHopperBlockEntity(pos, state);
     }
 
     @Override
     @Nullable
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@Nonnull Level level, @Nonnull BlockState state, @Nonnull BlockEntityType<T> entityType) {
-        return createTickerHelper(entityType, (BlockEntityType<WoodenHopperTileEntity>) WoodenHopperTileEntities.WOODEN_HOPPER, WoodenHopperTileEntity::tick);
+        return createTickerHelper(entityType, WoodenHopperBlockEntities.WOODEN_HOPPER.get(), WoodenHopperBlockEntity::tick);
     }
 
     /**
@@ -69,9 +68,9 @@ public class WoodenHopperBlock extends HopperBlock {
     @Override
     public void setPlacedBy(@Nonnull Level worldIn, @Nonnull BlockPos pos, @Nonnull BlockState state, @Nonnull LivingEntity placer, ItemStack stack) {
         if (stack.hasCustomHoverName()) {
-            BlockEntity tileentity = worldIn.getBlockEntity(pos);
-            if (tileentity instanceof WoodenHopperTileEntity) {
-                ((WoodenHopperTileEntity)tileentity).setCustomName(stack.getHoverName());
+            BlockEntity blockEntity = worldIn.getBlockEntity(pos);
+            if (blockEntity instanceof WoodenHopperBlockEntity) {
+                ((WoodenHopperBlockEntity)blockEntity).setCustomName(stack.getHoverName());
             }
         }
     }
@@ -83,9 +82,9 @@ public class WoodenHopperBlock extends HopperBlock {
         if (worldIn.isClientSide) {
             return InteractionResult.SUCCESS;
         } else {
-            BlockEntity tileentity = worldIn.getBlockEntity(pos);
-            if (tileentity instanceof WoodenHopperTileEntity) {
-                NetworkHooks.openGui((ServerPlayer) player, (WoodenHopperTileEntity) tileentity, pos);
+            BlockEntity blockEntity = worldIn.getBlockEntity(pos);
+            if (blockEntity instanceof WoodenHopperBlockEntity) {
+                NetworkHooks.openGui((ServerPlayer) player, (WoodenHopperBlockEntity) blockEntity, pos);
                 player.awardStat(Stats.INSPECT_HOPPER);
             }
             return InteractionResult.CONSUME;
@@ -95,9 +94,9 @@ public class WoodenHopperBlock extends HopperBlock {
     @Override
     public void onRemove(BlockState state, @Nonnull Level worldIn, @Nonnull BlockPos pos, BlockState newState, boolean isMoving) {
         if (!state.is(newState.getBlock())) {
-            BlockEntity tileentity = worldIn.getBlockEntity(pos);
-            if (tileentity instanceof WoodenHopperTileEntity) {
-                Containers.dropContents(worldIn, pos, (WoodenHopperTileEntity)tileentity);
+            BlockEntity blockEntity = worldIn.getBlockEntity(pos);
+            if (blockEntity instanceof WoodenHopperBlockEntity) {
+                Containers.dropContents(worldIn, pos, (WoodenHopperBlockEntity)blockEntity);
                 worldIn.updateNeighbourForOutputSignal(pos, this);
             }
             super.onRemove(state, worldIn, pos, newState, isMoving);
@@ -106,9 +105,9 @@ public class WoodenHopperBlock extends HopperBlock {
 
     @Override
     public void entityInside(@Nonnull BlockState state, Level worldIn, @Nonnull BlockPos pos, @Nonnull Entity entityIn) {
-        BlockEntity tileentity = worldIn.getBlockEntity(pos);
-        if (tileentity instanceof WoodenHopperTileEntity) {
-            ((WoodenHopperTileEntity)tileentity).onEntityCollision(entityIn);
+        BlockEntity blockEntity = worldIn.getBlockEntity(pos);
+        if (blockEntity instanceof WoodenHopperBlockEntity) {
+            ((WoodenHopperBlockEntity)blockEntity).onEntityCollision(entityIn);
         }
     }
 
