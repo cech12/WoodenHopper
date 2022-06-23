@@ -4,6 +4,7 @@ import cech12.woodenhopper.api.blockentity.WoodenHopperBlockEntities;
 import cech12.woodenhopper.block.WoodenHopperItemHandler;
 import cech12.woodenhopper.config.ServerConfig;
 import cech12.woodenhopper.inventory.WoodenHopperContainer;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.HopperBlock;
@@ -22,6 +23,7 @@ import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.network.chat.Component;
@@ -206,23 +208,32 @@ public class WoodenHopperBlockEntity extends RandomizableContainerBlockEntity im
         return getItemHandler(hopper.getLevel(), x, y, z, hopperFacing.getOpposite());
     }
 
-    public static Optional<Pair<IItemHandler, Object>> getItemHandler(Level worldIn, double x, double y, double z, final Direction side) {
+    public static Optional<Pair<IItemHandler, Object>> getItemHandler(Level level, double x, double y, double z, final Direction side) {
         int i = Mth.floor(x);
         int j = Mth.floor(y);
         int k = Mth.floor(z);
         BlockPos blockpos = new BlockPos(i, j, k);
-        BlockState state = worldIn.getBlockState(blockpos);
+        BlockState state = level.getBlockState(blockpos);
         if (state.hasBlockEntity()) {
-            BlockEntity tileentity = worldIn.getBlockEntity(blockpos);
-            if (tileentity != null) {
-                return tileentity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side)
-                        .map(capability -> ImmutablePair.of(capability, tileentity));
+            BlockEntity blockEntity = level.getBlockEntity(blockpos);
+            if (blockEntity != null) {
+                return blockEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side)
+                        .map(capability -> ImmutablePair.of(capability, blockEntity));
             }
         }
         //support vanilla inventory blocks without IItemHandler
         Block block = state.getBlock();
         if (block instanceof WorldlyContainerHolder) {
-            return Optional.of(ImmutablePair.of(new SidedInvWrapper(((WorldlyContainerHolder)block).getContainer(state, worldIn, blockpos), side), state));
+            return Optional.of(ImmutablePair.of(new SidedInvWrapper(((WorldlyContainerHolder)block).getContainer(state, level, blockpos), side), state));
+        }
+        //get entities with item handlers
+        List<Entity> list = level.getEntities((Entity)null,
+                new AABB(x - 0.5D, y - 0.5D, z - 0.5D, x + 0.5D, y + 0.5D, z + 0.5D),
+                (entity) -> !(entity instanceof LivingEntity) && entity.isAlive() && entity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side).isPresent());
+        if (!list.isEmpty()) {
+            Entity entity = list.get(level.random.nextInt(list.size()));
+            return entity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side)
+                    .map(capability -> ImmutablePair.of(capability, entity));
         }
         return Optional.empty();
     }
