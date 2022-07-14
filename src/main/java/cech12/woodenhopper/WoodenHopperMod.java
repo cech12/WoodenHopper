@@ -11,7 +11,6 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
@@ -32,7 +31,7 @@ public class WoodenHopperMod {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         WoodenHopperBlocks.BLOCKS.register(modEventBus);
         WoodenHopperItems.ITEMS.register(modEventBus);
-        WoodenHopperBlockEntities.BLOCK_ENTITIES.register(modEventBus);
+        WoodenHopperBlockEntities.BLOCK_ENTITY_TYPES.register(modEventBus);
         WoodenHopperMenuTypes.MENU_TYPES.register(modEventBus);
         //Config
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, ServerConfig.SERVER_CONFIG);

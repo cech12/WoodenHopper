@@ -84,7 +84,7 @@ public class WoodenHopperBlock extends HopperBlock {
         } else {
             BlockEntity blockEntity = worldIn.getBlockEntity(pos);
             if (blockEntity instanceof WoodenHopperBlockEntity) {
-                NetworkHooks.openGui((ServerPlayer) player, (WoodenHopperBlockEntity) blockEntity, pos);
+                NetworkHooks.openScreen((ServerPlayer) player, (WoodenHopperBlockEntity) blockEntity, pos);
                 player.awardStat(Stats.INSPECT_HOPPER);
             }
             return InteractionResult.CONSUME;

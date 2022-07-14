@@ -11,7 +11,7 @@ import net.minecraftforge.registries.RegistryObject;
 
 public class WoodenHopperMenuTypes {
 
-    public static final DeferredRegister<MenuType<?>> MENU_TYPES = DeferredRegister.create(ForgeRegistries.CONTAINERS, WoodenHopperMod.MOD_ID);
+    public static final DeferredRegister<MenuType<?>> MENU_TYPES = DeferredRegister.create(ForgeRegistries.MENU_TYPES, WoodenHopperMod.MOD_ID);
 
     public static final RegistryObject<MenuType<WoodenHopperContainer>> WOODEN_HOPPER = MENU_TYPES.register("woodenhopper", () -> IForgeMenuType.create((pWindowID, pInventory, pData) -> {
         BlockPos pos = pData.readBlockPos();

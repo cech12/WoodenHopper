@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Forge Recommended Versioning](https://mcforge.readthedocs.io/en/latest/conventions/versioning/).
 
+## [1.19-1.3.2.0] - 2022-07-14
+### Changed
+- Update mod to Forge 1.19-41.0.96 to fix startup crashes since Forge 1.19-41.0.94
+
 ## [1.19-1.3.1.0] - 2022-06-30
 ### Changed
 - Update mod to Forge 1.19-41.0.56 to support interaction with chest boats

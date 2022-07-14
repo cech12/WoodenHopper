@@ -10,8 +10,8 @@ import net.minecraftforge.registries.RegistryObject;
 
 public class WoodenHopperBlockEntities {
 
-    public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITIES, WoodenHopperMod.MOD_ID);
+    public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, WoodenHopperMod.MOD_ID);
 
-    public static final RegistryObject<BlockEntityType<WoodenHopperBlockEntity>> WOODEN_HOPPER = BLOCK_ENTITIES.register("wooden_hopper", () -> BlockEntityType.Builder.of(WoodenHopperBlockEntity::new, WoodenHopperBlocks.WOODEN_HOPPER.get()).build(null));
+    public static final RegistryObject<BlockEntityType<WoodenHopperBlockEntity>> WOODEN_HOPPER = BLOCK_ENTITY_TYPES.register("wooden_hopper", () -> BlockEntityType.Builder.of(WoodenHopperBlockEntity::new, WoodenHopperBlocks.WOODEN_HOPPER.get()).build(null));
 
 }
