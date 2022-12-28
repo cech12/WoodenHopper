@@ -87,8 +87,10 @@ public class WoodenHopperBlockEntity extends RandomizableContainerBlockEntity im
 
     @Override
     protected void setItems(@Nonnull NonNullList<ItemStack> itemsIn) {
-        this.inventory.setStackInSlot(0, itemsIn.get(0));
-        this.setChanged();
+        if (itemsIn.size() == 1) {
+            this.inventory.setStackInSlot(0, itemsIn.get(0));
+        }
+        //this.setChanged(); //don't set it as changed to be compatible with Canary
     }
 
     /**
