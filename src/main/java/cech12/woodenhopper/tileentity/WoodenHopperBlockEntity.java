@@ -28,7 +28,7 @@ import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.ItemStackHandler;
@@ -219,7 +219,7 @@ public class WoodenHopperBlockEntity extends RandomizableContainerBlockEntity im
         if (state.hasBlockEntity()) {
             BlockEntity blockEntity = level.getBlockEntity(blockpos);
             if (blockEntity != null) {
-                return blockEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side)
+                return blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, side)
                         .map(capability -> ImmutablePair.of(capability, blockEntity));
             }
         }
@@ -231,10 +231,10 @@ public class WoodenHopperBlockEntity extends RandomizableContainerBlockEntity im
         //get entities with item handlers
         List<Entity> list = level.getEntities((Entity)null,
                 new AABB(x - 0.5D, y - 0.5D, z - 0.5D, x + 0.5D, y + 0.5D, z + 0.5D),
-                (entity) -> !(entity instanceof LivingEntity) && entity.isAlive() && entity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side).isPresent());
+                (entity) -> !(entity instanceof LivingEntity) && entity.isAlive() && entity.getCapability(ForgeCapabilities.ITEM_HANDLER, side).isPresent());
         if (!list.isEmpty()) {
             Entity entity = list.get(level.random.nextInt(list.size()));
-            return entity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side)
+            return entity.getCapability(ForgeCapabilities.ITEM_HANDLER, side)
                     .map(capability -> ImmutablePair.of(capability, entity));
         }
         return Optional.empty();

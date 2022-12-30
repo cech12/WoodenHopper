@@ -7,8 +7,10 @@ import cech12.woodenhopper.api.item.WoodenHopperItems;
 import cech12.woodenhopper.client.WoodenHopperScreen;
 import cech12.woodenhopper.config.ServerConfig;
 import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.event.CreativeModeTabEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -42,6 +44,13 @@ public class WoodenHopperMod {
     @SubscribeEvent
     public static void onClientRegister(FMLClientSetupEvent event) {
         MenuScreens.register(WoodenHopperMenuTypes.WOODEN_HOPPER.get(), WoodenHopperScreen::new);
+    }
+
+    @SubscribeEvent
+    public static void addItemsToTabs(CreativeModeTabEvent.BuildContents event) {
+        if (event.getTab() == CreativeModeTabs.REDSTONE_BLOCKS) {
+            event.accept(WoodenHopperItems.WOODEN_HOPPER);
+        }
     }
 
 }
