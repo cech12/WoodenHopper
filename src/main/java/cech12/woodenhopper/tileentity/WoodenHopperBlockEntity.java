@@ -172,7 +172,7 @@ public class WoodenHopperBlockEntity extends RandomizableContainerBlockEntity im
 
     private static ItemStack insertStack(BlockEntity source, Object destination, IItemHandler destInventory, ItemStack stack, int slot) {
         ItemStack itemstack = destInventory.getStackInSlot(slot);
-        if (destInventory.insertItem(slot, stack, true).isEmpty()) {
+        if (destInventory.insertItem(slot, stack, true) != stack) {
             boolean insertedItem = false;
             boolean inventoryWasEmpty = isEmpty(destInventory);
             if (itemstack.isEmpty()) {

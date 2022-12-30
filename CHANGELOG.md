@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 ### Changed
 - Update to Forge 1.19.3-44.0.41
 
+### Fixed
+- The wooden hopper did not fill up with the item it contained even though there was space.
+
 ## [1.19-1.3.2.1] - 2022-12-28
 ### Fixed
 - incompatibility with comparators when Canary is installed
