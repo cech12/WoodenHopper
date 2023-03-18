@@ -185,8 +185,7 @@ public class WoodenHopperBlockEntity extends RandomizableContainerBlockEntity im
                 insertedItem = originalSize < stack.getCount();
             }
             if (insertedItem) {
-                if (inventoryWasEmpty && destination instanceof WoodenHopperBlockEntity) {
-                    WoodenHopperBlockEntity destinationHopper = (WoodenHopperBlockEntity)destination;
+                if (inventoryWasEmpty && destination instanceof WoodenHopperBlockEntity destinationHopper) {
                     if (!destinationHopper.mayTransfer()) {
                         int k = 0;
                         if (source instanceof WoodenHopperBlockEntity) {

@@ -41,7 +41,7 @@ public class WoodenHopperScreen extends AbstractContainerScreen<WoodenHopperCont
             RenderSystem.setShaderTexture(0, HOPPER_GUI_TEXTURE);
             int i = (this.width - this.imageWidth) / 2;
             int j = (this.height - this.imageHeight) / 2;
-            this.blit(matrixStack, i, j, 0, 0, this.imageWidth, this.imageHeight);
+            blit(matrixStack, i, j, 0, 0, this.imageWidth, this.imageHeight);
         }
     }
 }
