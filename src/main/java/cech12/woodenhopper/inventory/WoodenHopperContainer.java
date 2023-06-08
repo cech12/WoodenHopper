@@ -34,7 +34,7 @@ public class WoodenHopperContainer extends AbstractContainerMenu {
     }
 
     public WoodenHopperContainer(int id, Inventory playerInventoryIn, BlockPos pos) {
-        this(id, playerInventoryIn, (WoodenHopperBlockEntity) playerInventoryIn.player.level.getBlockEntity(pos));
+        this(id, playerInventoryIn, (WoodenHopperBlockEntity) playerInventoryIn.player.level().getBlockEntity(pos));
     }
 
     /**

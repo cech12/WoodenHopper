@@ -10,7 +10,7 @@ import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.event.CreativeModeTabEvent;
+import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -47,8 +47,8 @@ public class WoodenHopperMod {
     }
 
     @SubscribeEvent
-    public static void addItemsToTabs(CreativeModeTabEvent.BuildContents event) {
-        if (event.getTab() == CreativeModeTabs.REDSTONE_BLOCKS) {
+    public static void addItemsToTabs(BuildCreativeModeTabContentsEvent event) {
+        if (event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) {
             event.accept(WoodenHopperItems.WOODEN_HOPPER);
         }
     }
