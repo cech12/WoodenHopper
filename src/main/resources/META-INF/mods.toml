@@ -1,26 +1,24 @@
 modLoader="javafml"
-loaderVersion="[46,)"
-issueTrackerURL="https://github.com/cech12/BrickShears/issues"
-license="The MIT License (MIT)"
+loaderVersion="${loader_version_range}"
+issueTrackerURL="${mod_issue_tracker}"
+license="${mod_license}"
 [[mods]]
-    modId="woodenhopper"
-    version="${file.jarVersion}"
-    displayName="Wooden Hopper"
-    displayURL="https://github.com/cech12/WoodenHopper"
+    modId="${mod_id}"
+    version="${minecraft_version}-${mod_version}"
+    displayName="${mod_name}"
+    displayURL="${mod_url}"
     logoFile="logo.png"
-    authors="Cech12"
-    description='''
-    A mod which adds a Wooden Hopper.
-    '''
-[[dependencies.woodenhopper]]
+    authors="${mod_authors}"
+    description='''${mod_description}'''
+[[dependencies.${mod_id}]]
     modId="forge"
     mandatory=true
-    versionRange="[46.0.1,)"
+    versionRange="${forge_version_range}"
     ordering="NONE"
     side="BOTH"
-[[dependencies.woodenhopper]]
+[[dependencies.${mod_id}]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.20,)"
+    versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="BOTH"
