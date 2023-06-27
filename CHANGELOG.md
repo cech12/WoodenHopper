@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [1.20.1-1.5.1.0] - 2023-06-27
 ### Changed
-- Update to Forge 1.20-46.0.34 to add compatibility with Chiseled Bookshelf
+- Update to Forge 1.20.1-47.0.34 to add compatibility with Chiseled Bookshelf
 
 ## [1.20-1.5.0.0] - 2023-06-08
 ### Changed
