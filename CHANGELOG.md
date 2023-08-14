@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Forge Recommended Versioning](https://mcforge.readthedocs.io/en/latest/conventions/versioning/).
 
+## [1.19.4-1.4.0.1] - 2023-08-14
+### Fixed
+- Incompatibility with Tubes Reloaded (and maybe other mods) (thanks to Dam-Buty for the report) #17
+
 ## [1.19.4-1.4.0.0] - 2023-03-18
 ### Changed
 - Update to Forge 1.19.4-45.0.9
