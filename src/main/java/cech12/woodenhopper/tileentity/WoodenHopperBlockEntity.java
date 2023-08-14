@@ -171,35 +171,22 @@ public class WoodenHopperBlockEntity extends RandomizableContainerBlockEntity im
     }
 
     private static ItemStack insertStack(BlockEntity source, Object destination, IItemHandler destInventory, ItemStack stack, int slot) {
-        ItemStack itemstack = destInventory.getStackInSlot(slot);
-        if (destInventory.insertItem(slot, stack, true) != stack) {
-            boolean insertedItem = false;
+        ItemStack result = stack;
+        if (!destInventory.insertItem(slot, stack, true).equals(stack)) {
             boolean inventoryWasEmpty = isEmpty(destInventory);
-            if (itemstack.isEmpty()) {
-                destInventory.insertItem(slot, stack, false);
-                stack = ItemStack.EMPTY;
-                insertedItem = true;
-            } else if (ItemHandlerHelper.canItemStacksStack(itemstack, stack)) {
-                int originalSize = stack.getCount();
-                stack = destInventory.insertItem(slot, stack, false);
-                insertedItem = originalSize < stack.getCount();
-            }
-            if (insertedItem) {
-                if (inventoryWasEmpty && destination instanceof WoodenHopperBlockEntity destinationHopper) {
-                    if (!destinationHopper.mayTransfer()) {
-                        int k = 0;
-                        if (source instanceof WoodenHopperBlockEntity) {
-                            if (destinationHopper.getLastUpdateTime() >= ((WoodenHopperBlockEntity) source).getLastUpdateTime()) {
-                                k = 1;
-                            }
-                        }
-                        destinationHopper.setTransferCooldown(ServerConfig.WOODEN_HOPPER_COOLDOWN.get() - k);
-                    }
+            result = destInventory.insertItem(slot, stack, false);
+            if (result.getCount() < stack.getCount() && inventoryWasEmpty
+                    && destination instanceof WoodenHopperBlockEntity destinationHopper
+                    && !destinationHopper.mayTransfer()
+            ) {
+                int k = 0;
+                if (source instanceof WoodenHopperBlockEntity && destinationHopper.getLastUpdateTime() >= ((WoodenHopperBlockEntity) source).getLastUpdateTime()) {
+                    k = 1;
                 }
+                destinationHopper.setTransferCooldown(ServerConfig.WOODEN_HOPPER_COOLDOWN.get() - k);
             }
         }
-
-        return stack;
+        return result;
     }
 
     private static Optional<Pair<IItemHandler, Object>> getItemHandler(WoodenHopperBlockEntity hopper, Direction hopperFacing) {
