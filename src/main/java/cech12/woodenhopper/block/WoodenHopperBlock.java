@@ -12,7 +12,6 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Containers;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.stats.Stats;
@@ -27,7 +26,6 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.network.NetworkHooks;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -84,7 +82,7 @@ public class WoodenHopperBlock extends HopperBlock {
         } else {
             BlockEntity blockEntity = worldIn.getBlockEntity(pos);
             if (blockEntity instanceof WoodenHopperBlockEntity) {
-                NetworkHooks.openScreen((ServerPlayer) player, (WoodenHopperBlockEntity) blockEntity, pos);
+                player.openMenu((WoodenHopperBlockEntity)blockEntity);
                 player.awardStat(Stats.INSPECT_HOPPER);
             }
             return InteractionResult.CONSUME;

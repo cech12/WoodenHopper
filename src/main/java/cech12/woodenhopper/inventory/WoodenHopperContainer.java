@@ -1,20 +1,20 @@
 package cech12.woodenhopper.inventory;
 
 import cech12.woodenhopper.api.inventory.WoodenHopperMenuTypes;
-import cech12.woodenhopper.tileentity.WoodenHopperBlockEntity;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.core.BlockPos;
 
 import javax.annotation.Nonnull;
 
 public class WoodenHopperContainer extends AbstractContainerMenu {
-    private final WoodenHopperBlockEntity hopper;
+    private final Container hopper;
 
-    public WoodenHopperContainer(int id, Inventory playerInventory, WoodenHopperBlockEntity inventory) {
+    public WoodenHopperContainer(int id, Inventory playerInventory, Container inventory) {
         super(WoodenHopperMenuTypes.WOODEN_HOPPER.get(), id);
         this.hopper = inventory;
         checkContainerSize(inventory, 1);
@@ -33,8 +33,8 @@ public class WoodenHopperContainer extends AbstractContainerMenu {
         }
     }
 
-    public WoodenHopperContainer(int id, Inventory playerInventoryIn, BlockPos pos) {
-        this(id, playerInventoryIn, (WoodenHopperBlockEntity) playerInventoryIn.player.level().getBlockEntity(pos));
+    public WoodenHopperContainer(int id, Inventory playerInventoryIn) {
+        this(id, playerInventoryIn, new SimpleContainer(1));
     }
 
     /**
