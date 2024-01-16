@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Forge Recommended Versioning](https://mcforge.readthedocs.io/en/latest/conventions/versioning/).
 
+## [1.20.2-2.0.0.0] - 2024-01-12
+### Changed
+- Move to Multiloader mod template to support Forge and Neoforge
+- Update to Minecraft 1.20.2 (Forge 48.1.0, Neoforge 20.2.86)
+
 ## [1.20.2-1.7.0.0] - 2023-10-17
 ### Changed
 - update and move back to Forge 1.20.2-48.0.23 (from NeoForge) until it is stable
