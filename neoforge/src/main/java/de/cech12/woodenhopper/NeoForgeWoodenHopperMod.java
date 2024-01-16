@@ -1,5 +1,6 @@
 package de.cech12.woodenhopper;
 
+import de.cech12.woodenhopper.block.NeoForgeWoodenHopperItemHandler;
 import de.cech12.woodenhopper.client.WoodenHopperScreen;
 import de.cech12.woodenhopper.platform.NeoForgeRegistryHelper;
 import net.minecraft.client.gui.screens.MenuScreens;
@@ -10,6 +11,8 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 
 @Mod(Constants.MOD_ID)
@@ -28,6 +31,11 @@ public class NeoForgeWoodenHopperMod {
     @SubscribeEvent
     public static void onClientRegister(FMLClientSetupEvent event) {
         MenuScreens.register(NeoForgeRegistryHelper.WOODEN_HOPPER_MENU_TYPE.get(), WoodenHopperScreen::new);
+    }
+
+    @SubscribeEvent
+    public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, NeoForgeRegistryHelper.WOODEN_HOPPER_BLOCK_ENTITY_TYPE.get(), (blockEntity, side) -> new NeoForgeWoodenHopperItemHandler(blockEntity));
     }
 
     @SubscribeEvent

@@ -1,6 +1,5 @@
 package de.cech12.woodenhopper.blockentity;
 
-import de.cech12.woodenhopper.block.NeoForgeWoodenHopperItemHandler;
 import de.cech12.woodenhopper.platform.Services;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.Block;
@@ -22,7 +21,7 @@ import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.common.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.neoforged.neoforge.items.ItemStackHandler;
@@ -197,8 +196,7 @@ public class NeoForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
         if (state.hasBlockEntity()) {
             BlockEntity blockEntity = level.getBlockEntity(blockpos);
             if (blockEntity != null) {
-                return blockEntity.getCapability(Capabilities.ITEM_HANDLER, side)
-                        .map(capability -> ImmutablePair.of(capability, blockEntity));
+                return Optional.of(ImmutablePair.of(level.getCapability(Capabilities.ItemHandler.BLOCK, blockEntity.getBlockPos(), side), blockEntity));
             }
         }
         //support vanilla inventory blocks without IItemHandler
@@ -209,11 +207,10 @@ public class NeoForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
         //get entities with item handlers
         List<Entity> list = level.getEntities((Entity)null,
                 new AABB(x - 0.5D, y - 0.5D, z - 0.5D, x + 0.5D, y + 0.5D, z + 0.5D),
-                (entity) -> !(entity instanceof LivingEntity) && entity.isAlive() && entity.getCapability(Capabilities.ITEM_HANDLER, side).isPresent());
+                (entity) -> !(entity instanceof LivingEntity) && entity.isAlive() && entity.getCapability(Capabilities.ItemHandler.ENTITY_AUTOMATION, side) != null);
         if (!list.isEmpty()) {
             Entity entity = list.get(level.random.nextInt(list.size()));
-            return entity.getCapability(Capabilities.ITEM_HANDLER, side)
-                    .map(capability -> ImmutablePair.of(capability, entity));
+            return Optional.of(ImmutablePair.of(entity.getCapability(Capabilities.ItemHandler.ENTITY_AUTOMATION, side), entity));
         }
         return Optional.empty();
     }
@@ -339,12 +336,6 @@ public class NeoForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
                 }
             }
         }
-    }
-
-    @Override
-    @Nonnull
-    protected IItemHandler createUnSidedHandler() {
-        return new NeoForgeWoodenHopperItemHandler(this);
     }
 
 }
