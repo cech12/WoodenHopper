@@ -5,13 +5,13 @@ import net.neoforged.fml.ModList;
 import net.neoforged.fml.loading.FMLLoader;
 
 /**
- * The platform service implementation for Forge.
+ * The platform service implementation for NeoForge.
  */
 public class NeoForgePlatformHelper implements IPlatformHelper {
 
     @Override
     public String getPlatformName() {
-        return "Forge";
+        return "NeoForge";
     }
 
     @Override
