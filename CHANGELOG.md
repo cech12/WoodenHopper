@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Forge Recommended Versioning](https://mcforge.readthedocs.io/en/latest/conventions/versioning/).
 
+## [1.20.4-2.1.0.1] - 2024-04-21
+### Fixed
+- block entities without an item handler above a wooden hopper could crash the game (Neoforge) (thanks to randomleech for the report) #24
+
 ## [1.20.4-2.1.0.0] - 2024-01-16
 ### Changed
 - Update to Minecraft 1.20.4 (Forge 49.0.19, Neoforge 20.4.109-beta)

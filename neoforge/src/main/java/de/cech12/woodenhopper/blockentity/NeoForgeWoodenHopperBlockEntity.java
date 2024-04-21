@@ -195,7 +195,7 @@ public class NeoForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
         BlockState state = level.getBlockState(blockpos);
         if (state.hasBlockEntity()) {
             BlockEntity blockEntity = level.getBlockEntity(blockpos);
-            if (blockEntity != null) {
+            if (blockEntity != null && level.getCapability(Capabilities.ItemHandler.BLOCK, blockEntity.getBlockPos(), side) != null) {
                 return Optional.of(ImmutablePair.of(level.getCapability(Capabilities.ItemHandler.BLOCK, blockEntity.getBlockPos(), side), blockEntity));
             }
         }
