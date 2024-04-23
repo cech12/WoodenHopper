@@ -1,6 +1,6 @@
 package de.cech12.woodenhopper.inventory;
 
-import de.cech12.woodenhopper.platform.Services;
+import de.cech12.woodenhopper.Constants;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
@@ -15,7 +15,7 @@ public class WoodenHopperContainer extends AbstractContainerMenu {
     private final Container hopper;
 
     public WoodenHopperContainer(int id, Inventory playerInventory, Container inventory) {
-        super(Services.REGISTRY.getMenuType(), id);
+        super(Constants.WOODEN_HOPPER_MENU_TYPE.get(), id);
         this.hopper = inventory;
         checkContainerSize(inventory, 1);
         inventory.startOpen(playerInventory.player);

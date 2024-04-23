@@ -1,10 +1,12 @@
 package de.cech12.woodenhopper.blockentity;
 
+import de.cech12.woodenhopper.Constants;
 import de.cech12.woodenhopper.inventory.WoodenHopperContainer;
 import de.cech12.woodenhopper.platform.Services;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.block.entity.Hopper;
@@ -19,7 +21,7 @@ public abstract class WoodenHopperBlockEntity extends RandomizableContainerBlock
     protected long tickedGameTime;
 
     public WoodenHopperBlockEntity(BlockPos pos, BlockState state) {
-        super(Services.REGISTRY.getBlockEntityType(), pos, state);
+        super(Constants.WOODEN_HOPPER_BLOCK_ENTITY_TYPE.get(), pos, state);
     }
 
     @Override
@@ -85,4 +87,7 @@ public abstract class WoodenHopperBlockEntity extends RandomizableContainerBlock
     protected long getLastUpdateTime() {
         return this.tickedGameTime;
     }
+
+    public abstract void onEntityCollision(Entity entity);
+
 }

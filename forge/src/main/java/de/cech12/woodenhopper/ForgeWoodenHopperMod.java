@@ -29,13 +29,13 @@ public class ForgeWoodenHopperMod {
     @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     public static void onClientRegister(FMLClientSetupEvent event) {
-        MenuScreens.register(ForgeRegistryHelper.WOODEN_HOPPER_MENU_TYPE.get(), WoodenHopperScreen::new);
+        MenuScreens.register(Constants.WOODEN_HOPPER_MENU_TYPE.get(), WoodenHopperScreen::new);
     }
 
     @SubscribeEvent
     public static void addItemsToTabs(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) {
-            event.accept(ForgeRegistryHelper.WOODEN_HOPPER_ITEM);
+            event.accept(Constants.WOODEN_HOPPER_ITEM);
         }
     }
 

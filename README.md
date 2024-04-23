@@ -9,10 +9,15 @@
 [![License](https://img.shields.io/github/license/cech12/WoodenHopper)](http://opensource.org/licenses/MIT)
 [![](https://img.shields.io/discord/752506676719910963.svg?style=flat&color=informational&logo=discord&label=Discord)](https://discord.gg/gRUFH5t)
 
-This is a **Minecraft Forge** mod and adds a **Wooden Hopper** to the game.
+This is a Minecraft mod that adds a **Wooden Hopper** to the game. (Forge, NeoForge, Fabric, Quilt)
 
 ![Wooden Hopper](material/hopper.png)
 
 It acts like a vanilla hopper but is only half as fast as a vanilla hopper (16 ticks instead of 8, configurable) and has only one slot.
+
+The Fabric / Quilt version needs the following mods:
+
+- Fabric API ([Github](https://github.com/FabricMC/fabric), [Curseforge](https://www.curseforge.com/minecraft/mc-mods/fabric-api), [Modrinth](https://modrinth.com/mod/fabric-api))
+- Cloth Config API ([Github](https://github.com/shedaniel/cloth-config), [Curseforge](https://www.curseforge.com/minecraft/mc-mods/cloth-config), [Modrinth](https://modrinth.com/mod/cloth-config))
 
 For more information check out the **Wiki**: https://github.com/cech12/WoodenHopper/wiki

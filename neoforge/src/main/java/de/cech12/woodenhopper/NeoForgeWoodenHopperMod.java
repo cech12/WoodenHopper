@@ -30,18 +30,18 @@ public class NeoForgeWoodenHopperMod {
     @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     public static void onClientRegister(FMLClientSetupEvent event) {
-        MenuScreens.register(NeoForgeRegistryHelper.WOODEN_HOPPER_MENU_TYPE.get(), WoodenHopperScreen::new);
+        MenuScreens.register(Constants.WOODEN_HOPPER_MENU_TYPE.get(), WoodenHopperScreen::new);
     }
 
     @SubscribeEvent
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, NeoForgeRegistryHelper.WOODEN_HOPPER_BLOCK_ENTITY_TYPE.get(), (blockEntity, side) -> new NeoForgeWoodenHopperItemHandler(blockEntity));
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, Constants.WOODEN_HOPPER_BLOCK_ENTITY_TYPE.get(), (blockEntity, side) -> new NeoForgeWoodenHopperItemHandler(blockEntity));
     }
 
     @SubscribeEvent
     public static void addItemsToTabs(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) {
-            event.accept(NeoForgeRegistryHelper.WOODEN_HOPPER_ITEM);
+            event.accept(Constants.WOODEN_HOPPER_ITEM.get());
         }
     }
 

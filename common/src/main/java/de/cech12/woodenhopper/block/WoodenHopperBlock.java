@@ -1,5 +1,6 @@
 package de.cech12.woodenhopper.block;
 
+import de.cech12.woodenhopper.Constants;
 import de.cech12.woodenhopper.platform.Services;
 import de.cech12.woodenhopper.blockentity.WoodenHopperBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -53,7 +54,7 @@ public class WoodenHopperBlock extends HopperBlock {
     @Override
     @Nullable
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@Nonnull Level level, @Nonnull BlockState state, @Nonnull BlockEntityType<T> entityType) {
-        return createTickerHelper(entityType, Services.REGISTRY.getBlockEntityType(), Services.REGISTRY.getBlockTicker());
+        return createTickerHelper(entityType, Constants.WOODEN_HOPPER_BLOCK_ENTITY_TYPE.get(), Services.REGISTRY.getBlockTicker());
     }
 
     /**
@@ -72,7 +73,7 @@ public class WoodenHopperBlock extends HopperBlock {
     @Override
     @Nonnull
     public InteractionResult use(@Nonnull BlockState state, Level worldIn, @Nonnull BlockPos pos, @Nonnull Player player,
-                                             @Nonnull InteractionHand handIn, @Nonnull BlockHitResult hit) {
+                                 @Nonnull InteractionHand handIn, @Nonnull BlockHitResult hit) {
         if (worldIn.isClientSide) {
             return InteractionResult.SUCCESS;
         } else {
@@ -100,8 +101,8 @@ public class WoodenHopperBlock extends HopperBlock {
     @Override
     public void entityInside(@Nonnull BlockState state, Level worldIn, @Nonnull BlockPos pos, @Nonnull Entity entityIn) {
         BlockEntity blockEntity = worldIn.getBlockEntity(pos);
-        if (blockEntity instanceof WoodenHopperBlockEntity) {
-            Services.REGISTRY.onEntityCollision((WoodenHopperBlockEntity)blockEntity, entityIn);
+        if (blockEntity instanceof WoodenHopperBlockEntity woodenHopperBlockEntity) {
+            woodenHopperBlockEntity.onEntityCollision(entityIn);
         }
     }
 

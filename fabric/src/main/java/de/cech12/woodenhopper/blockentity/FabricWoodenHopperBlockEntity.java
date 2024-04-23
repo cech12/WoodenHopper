@@ -1,8 +1,15 @@
 package de.cech12.woodenhopper.blockentity;
 
-import de.cech12.woodenhopper.block.ForgeWoodenHopperItemHandler;
 import de.cech12.woodenhopper.platform.Services;
-import net.minecraft.world.entity.LivingEntity;
+import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.entity.vehicle.ContainerEntity;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.HopperBlock;
@@ -21,42 +28,40 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemHandlerHelper;
-import net.minecraftforge.items.ItemStackHandler;
-import net.minecraftforge.items.wrapper.SidedInvWrapper;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class ForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
+public class FabricWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
 
-    private ItemStackHandler inventory = new ItemStackHandler();
+    InventoryStorage inventory = InventoryStorage.of(this, null);
+    private NonNullList<ItemStack> items;
 
-    public ForgeWoodenHopperBlockEntity(BlockPos pos, BlockState state) {
+    public FabricWoodenHopperBlockEntity(BlockPos pos, BlockState state) {
         super(pos, state);
+        this.items = NonNullList.withSize(1, ItemStack.EMPTY);
     }
 
     @Override
-    public void load(@Nonnull CompoundTag nbt) {
-        super.load(nbt);
-        inventory = new ItemStackHandler();
-        if (!this.tryLoadLootTable(nbt)) {
-            this.inventory.deserializeNBT(nbt);
+    public void load(@Nonnull CompoundTag compoundTag) {
+        super.load(compoundTag);
+        this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
+        if (!this.tryLoadLootTable(compoundTag)) {
+            ContainerHelper.loadAllItems(compoundTag, this.items);
         }
     }
 
     @Override
-    public void saveAdditional(@Nonnull CompoundTag compound) {
-        super.saveAdditional(compound);
-        if (!this.trySaveLootTable(compound)) {
-            compound.merge(this.inventory.serializeNBT());
+    public void saveAdditional(@Nonnull CompoundTag compoundTag) {
+        super.saveAdditional(compoundTag);
+        if (!this.trySaveLootTable(compoundTag)) {
+            ContainerHelper.saveAllItems(compoundTag, this.items);
         }
     }
 
@@ -65,21 +70,18 @@ public class ForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
      */
     @Override
     public int getContainerSize() {
-        return this.inventory.getSlots();
+        return 1;
     }
 
     @Override
     @Nonnull
     protected NonNullList<ItemStack> getItems() {
-        return NonNullList.withSize(1, this.inventory.getStackInSlot(0));
+        return this.items;
     }
 
     @Override
-    protected void setItems(@Nonnull NonNullList<ItemStack> itemsIn) {
-        if (itemsIn.size() == 1) {
-            this.inventory.setStackInSlot(0, itemsIn.get(0));
-        }
-        //this.setChanged(); //don't set it as changed to be compatible with Canary
+    protected void setItems(@Nonnull NonNullList<ItemStack> nonNullList) {
+        this.items = nonNullList;
     }
 
     /**
@@ -89,7 +91,7 @@ public class ForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
     @Nonnull
     public ItemStack removeItem(int index, int count) {
         this.unpackLootTable(null);
-        ItemStack stack = this.inventory.extractItem(index, count, false);
+        ItemStack stack = ContainerHelper.removeItem(this.getItems(), index, count);
         this.setChanged();
         return stack;
     }
@@ -101,8 +103,7 @@ public class ForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
     @Nonnull
     public ItemStack removeItemNoUpdate(int index) {
         this.unpackLootTable(null);
-        ItemStack stack = this.inventory.getStackInSlot(index);
-        this.inventory.setStackInSlot(index, ItemStack.EMPTY);
+        ItemStack stack = ContainerHelper.takeItem(this.getItems(), index);
         this.setChanged();
         return stack;
     }
@@ -111,9 +112,12 @@ public class ForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
      * Sets the given item stack to the specified slot in the inventory (can be crafting or armor sections).
      */
     @Override
-    public void setItem(int index, @Nonnull ItemStack stack) {
+    public void setItem(int index, @Nonnull ItemStack itemStack) {
         this.unpackLootTable(null);
-        this.inventory.setStackInSlot(index, stack);
+        this.getItems().set(index, itemStack);
+        if (itemStack.getCount() > this.getMaxStackSize()) {
+            itemStack.setCount(this.getMaxStackSize());
+        }
         this.setChanged();
     }
 
@@ -123,7 +127,7 @@ public class ForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
             entity.tickedGameTime = level.getGameTime();
             if (!entity.isOnTransferCooldown()) {
                 entity.setTransferCooldown(0);
-                if (entity instanceof ForgeWoodenHopperBlockEntity blockEntity) {
+                if (entity instanceof FabricWoodenHopperBlockEntity blockEntity) {
                     blockEntity.updateHopper(() -> pullItems(blockEntity));
                 }
             }
@@ -148,40 +152,35 @@ public class ForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
         }
     }
 
-    private static ItemStack putStackInInventoryAllSlots(BlockEntity source, Object destination, IItemHandler destInventory, ItemStack stack) {
-        for (int slot = 0; slot < destInventory.getSlots() && !stack.isEmpty(); slot++) {
-            stack = insertStack(source, destination, destInventory, stack, slot);
+    private static ItemStack putStackInInventoryAllSlots(BlockEntity source, Object destination, Storage<ItemVariant> destInventory, ItemStack stack) {
+        boolean inventoryWasEmpty = isEmpty(destInventory);
+        try (Transaction transaction = Transaction.openOuter()) {
+            long count = destInventory.insert(ItemVariant.of(stack), stack.getCount(), transaction);
+            if (count > 0) {
+                stack.shrink((int)count);
+                if (inventoryWasEmpty && destination instanceof FabricWoodenHopperBlockEntity destinationHopper && !destinationHopper.mayTransfer()) {
+                    int k = 0;
+                    if (source instanceof FabricWoodenHopperBlockEntity && destinationHopper.getLastUpdateTime() >= ((FabricWoodenHopperBlockEntity) source).getLastUpdateTime()) {
+                        k = 1;
+                    }
+                    destinationHopper.setTransferCooldown(Services.CONFIG.getCooldown() - k);
+                }
+                transaction.commit();
+            } else {
+                transaction.abort();
+            }
         }
         return stack;
     }
 
-    private static ItemStack insertStack(BlockEntity source, Object destination, IItemHandler destInventory, ItemStack stack, int slot) {
-        ItemStack result = stack;
-        if (!destInventory.insertItem(slot, stack, true).equals(stack)) {
-            boolean inventoryWasEmpty = isEmpty(destInventory);
-            result = destInventory.insertItem(slot, stack, false);
-            if (result.getCount() < stack.getCount() && inventoryWasEmpty
-                    && destination instanceof ForgeWoodenHopperBlockEntity destinationHopper
-                    && !destinationHopper.mayTransfer()
-            ) {
-                int k = 0;
-                if (source instanceof ForgeWoodenHopperBlockEntity && destinationHopper.getLastUpdateTime() >= ((ForgeWoodenHopperBlockEntity) source).getLastUpdateTime()) {
-                    k = 1;
-                }
-                destinationHopper.setTransferCooldown(Services.CONFIG.getCooldown() - k);
-            }
-        }
-        return result;
-    }
-
-    private static Optional<Pair<IItemHandler, Object>> getItemHandler(ForgeWoodenHopperBlockEntity hopper, Direction hopperFacing) {
+    private static Optional<Pair<Storage<ItemVariant>, Object>> getItemHandler(FabricWoodenHopperBlockEntity hopper, Direction hopperFacing) {
         double x = hopper.getLevelX() + (double) hopperFacing.getStepX();
         double y = hopper.getLevelY() + (double) hopperFacing.getStepY();
         double z = hopper.getLevelZ() + (double) hopperFacing.getStepZ();
         return getItemHandler(hopper.getLevel(), x, y, z, hopperFacing.getOpposite());
     }
 
-    private static Optional<Pair<IItemHandler, Object>> getItemHandler(Level level, double x, double y, double z, final Direction side) {
+    private static Optional<Pair<Storage<ItemVariant>, Object>> getItemHandler(Level level, double x, double y, double z, final Direction side) {
         int i = Mth.floor(x);
         int j = Mth.floor(y);
         int k = Mth.floor(z);
@@ -190,41 +189,40 @@ public class ForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
         if (state.hasBlockEntity()) {
             BlockEntity blockEntity = level.getBlockEntity(blockpos);
             if (blockEntity != null) {
-                return blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, side)
-                        .map(capability -> ImmutablePair.of(capability, blockEntity));
+                Storage<ItemVariant> storage = ItemStorage.SIDED.find(level, blockEntity.getBlockPos(), side);
+                if (storage != null) {
+                    return Optional.of(ImmutablePair.of(storage, blockEntity));
+                }
             }
         }
-        //support vanilla inventory blocks without IItemHandler
+        //support vanilla inventory blocks without ItemStorage
         Block block = state.getBlock();
         if (block instanceof WorldlyContainerHolder) {
-            return Optional.of(ImmutablePair.of(new SidedInvWrapper(((WorldlyContainerHolder)block).getContainer(state, level, blockpos), side), state));
+            return Optional.of(ImmutablePair.of(InventoryStorage.of(((WorldlyContainerHolder)block).getContainer(state, level, blockpos), side), state));
         }
         //get entities with item handlers
         List<Entity> list = level.getEntities((Entity)null,
                 new AABB(x - 0.5D, y - 0.5D, z - 0.5D, x + 0.5D, y + 0.5D, z + 0.5D),
-                (entity) -> !(entity instanceof LivingEntity) && entity.isAlive() && entity.getCapability(ForgeCapabilities.ITEM_HANDLER, side).isPresent());
+                (entity) -> (entity instanceof ContainerEntity) && entity.isAlive()); //TODO modded entities with Item Storage?!
         if (!list.isEmpty()) {
             Entity entity = list.get(level.random.nextInt(list.size()));
-            return entity.getCapability(ForgeCapabilities.ITEM_HANDLER, side)
-                    .map(capability -> ImmutablePair.of(capability, entity));
+            return Optional.of(ImmutablePair.of(InventoryStorage.of((ContainerEntity) entity, side), entity));
         }
         return Optional.empty();
     }
 
-    private static boolean isNotFull(IItemHandler itemHandler) {
-        for (int slot = 0; slot < itemHandler.getSlots(); slot++) {
-            ItemStack stackInSlot = itemHandler.getStackInSlot(slot);
-            if (stackInSlot.isEmpty() || stackInSlot.getCount() < itemHandler.getSlotLimit(slot)) {
+    private static boolean isNotFull(Storage<ItemVariant> itemHandler) {
+        for (StorageView<ItemVariant> slot : itemHandler) {
+            if (slot.isResourceBlank() || slot.getAmount() < slot.getCapacity()) {
                 return true;
             }
         }
         return false;
     }
 
-    private static boolean isEmpty(IItemHandler itemHandler) {
-        for (int slot = 0; slot < itemHandler.getSlots(); slot++) {
-            ItemStack stackInSlot = itemHandler.getStackInSlot(slot);
-            if (stackInSlot.getCount() > 0) {
+    private static boolean isEmpty(Storage<ItemVariant> itemHandler) {
+        for (StorageView<ItemVariant> slot : itemHandler.nonEmptyViews()) {
+            if (!slot.isResourceBlank()) {
                 return false;
             }
         }
@@ -235,14 +233,14 @@ public class ForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
         Direction hopperFacing = this.getBlockState().getValue(HopperBlock.FACING);
         return getItemHandler(this, hopperFacing)
                 .map(destinationResult -> {
-                    IItemHandler itemHandler = destinationResult.getKey();
+                    Storage<ItemVariant> storage = destinationResult.getKey();
                     Object destination = destinationResult.getValue();
-                    if (isNotFull(itemHandler)) {
+                    if (isNotFull(storage)) {
                         for (int i = 0; i < this.getContainerSize(); ++i) {
                             if (!this.getItem(i).isEmpty()) {
                                 ItemStack originalSlotContents = this.getItem(i).copy();
                                 ItemStack insertStack = this.removeItem(i, 1);
-                                ItemStack remainder = putStackInInventoryAllSlots(this, destination, itemHandler, insertStack);
+                                ItemStack remainder = putStackInInventoryAllSlots(this, destination, storage, insertStack);
                                 if (remainder.isEmpty()) {
                                     return true;
                                 }
@@ -263,31 +261,36 @@ public class ForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
      * @param hopper the hopper in question
      * @return whether any items were successfully added to the hopper
      */
-    private static boolean pullItems(ForgeWoodenHopperBlockEntity hopper) {
+    private static boolean pullItems(FabricWoodenHopperBlockEntity hopper) {
         return getItemHandler(hopper, Direction.UP)
                 .map(itemHandlerResult -> {
                     //get item from item handler
                     if (Services.CONFIG.isPullItemsFromInventoriesEnabled()) {
-                        IItemHandler handler = itemHandlerResult.getKey();
-                        for (int i = 0; i < handler.getSlots(); i++) {
-                            ItemStack extractItem = handler.extractItem(i, 1, true);
-                            if (!extractItem.isEmpty()) {
-                                for (int j = 0; j < hopper.getContainerSize(); j++) {
-                                    ItemStack destStack = hopper.getItem(j);
-                                    if (hopper.canPlaceItem(j, extractItem) && (destStack.isEmpty() || destStack.getCount() < destStack.getMaxStackSize()
-                                            && destStack.getCount() < hopper.getMaxStackSize() && ItemHandlerHelper.canItemStacksStack(extractItem, destStack))) {
-                                        extractItem = handler.extractItem(i, 1, false);
-                                        if (destStack.isEmpty()) {
-                                            hopper.setItem(j, extractItem);
-                                        } else {
-                                            destStack.grow(1);
-                                            hopper.setItem(j, destStack);
+                        Storage<ItemVariant> storage = itemHandlerResult.getKey();
+                        try (Transaction transaction = Transaction.openOuter()) {
+                            for (StorageView<ItemVariant> slot : storage.nonEmptyViews()) {
+                                if (StorageUtil.simulateExtract(slot, slot.getResource(), 1, transaction) > 0) {
+                                    ItemStack extractedItem = slot.getResource().toStack(1);
+                                    for (int j = 0; j < hopper.getContainerSize(); j++) {
+                                        ItemStack destStack = hopper.getItem(j);
+                                        if (hopper.canPlaceItem(j, extractedItem) && (destStack.isEmpty() || destStack.getCount() < destStack.getMaxStackSize()
+                                                && destStack.getCount() < hopper.getMaxStackSize() && canItemStacksStack(extractedItem, destStack))) {
+                                            if (storage.extract(slot.getResource(), 1, transaction) > 0) {
+                                                if (destStack.isEmpty()) {
+                                                    hopper.setItem(j, extractedItem);
+                                                } else {
+                                                    destStack.grow(1);
+                                                    hopper.setItem(j, destStack);
+                                                }
+                                                hopper.setChanged();
+                                                transaction.commit();
+                                                return true;
+                                            }
                                         }
-                                        hopper.setChanged();
-                                        return true;
                                     }
                                 }
                             }
+                            transaction.abort();
                         }
                     }
                     return false;
@@ -304,7 +307,15 @@ public class ForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
                 });
     }
 
-    private static boolean captureItem(ForgeWoodenHopperBlockEntity hopper, ItemEntity p_200114_1_) {
+    private static boolean canItemStacksStack(@Nonnull ItemStack a, @Nonnull ItemStack b) {
+        if (!a.isEmpty() && ItemStack.isSameItem(a, b) && a.hasTag() == b.hasTag()) {
+            return (!a.hasTag() || Objects.equals(a.getTag(), b.getTag()));
+        } else {
+            return false;
+        }
+    }
+
+    private static boolean captureItem(FabricWoodenHopperBlockEntity hopper, ItemEntity p_200114_1_) {
         boolean flag = false;
         ItemStack itemstack = p_200114_1_.getItem().copy();
         ItemStack itemstack1 = putStackInInventoryAllSlots(null, hopper, hopper.inventory, itemstack);
@@ -317,7 +328,7 @@ public class ForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
         return flag;
     }
 
-    private static List<ItemEntity> getCaptureItems(ForgeWoodenHopperBlockEntity p_200115_0_) {
+    private static List<ItemEntity> getCaptureItems(FabricWoodenHopperBlockEntity p_200115_0_) {
         return p_200115_0_.getSuckShape().toAabbs().stream().flatMap((p_200110_1_) -> {
             return p_200115_0_.getLevel().getEntitiesOfClass(ItemEntity.class, p_200110_1_.move(p_200115_0_.getLevelX() - 0.5D, p_200115_0_.getLevelY() - 0.5D, p_200115_0_.getLevelZ() - 0.5D), EntitySelector.ENTITY_STILL_ALIVE).stream();
         }).collect(Collectors.toList());
@@ -332,12 +343,6 @@ public class ForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
                 }
             }
         }
-    }
-
-    @Override
-    @Nonnull
-    protected IItemHandler createUnSidedHandler() {
-        return new ForgeWoodenHopperItemHandler(this);
     }
 
 }

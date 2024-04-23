@@ -117,12 +117,6 @@ public class NeoForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
         this.setChanged();
     }
 
-    @Override
-    @Nonnull
-    protected Component getDefaultName() {
-        return Component.translatable("block.woodenhopper.wooden_hopper");
-    }
-
     public static void tick(Level level, BlockPos pos, BlockState state, WoodenHopperBlockEntity entity) {
         if (level != null && !level.isClientSide) {
             entity.transferCooldown--;
