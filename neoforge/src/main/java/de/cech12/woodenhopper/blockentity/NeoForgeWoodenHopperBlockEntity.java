@@ -19,7 +19,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.IItemHandler;
@@ -321,6 +320,7 @@ public class NeoForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
         }).collect(Collectors.toList());
     }
 
+    @Override
     public void onEntityCollision(Entity p_200113_1_) {
         if (Services.CONFIG.isPullItemsFromWorldEnabled()) {
             if (p_200113_1_ instanceof ItemEntity) {

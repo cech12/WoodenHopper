@@ -334,6 +334,7 @@ public class FabricWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
         }).collect(Collectors.toList());
     }
 
+    @Override
     public void onEntityCollision(Entity p_200113_1_) {
         if (Services.CONFIG.isPullItemsFromWorldEnabled()) {
             if (p_200113_1_ instanceof ItemEntity) {
