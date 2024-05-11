@@ -1,6 +1,8 @@
 package de.cech12.woodenhopper.blockentity;
 
 import de.cech12.woodenhopper.platform.Services;
+import net.minecraft.world.Container;
+import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -24,6 +26,7 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.items.wrapper.InvWrapper;
 import net.neoforged.neoforge.items.wrapper.SidedInvWrapper;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -188,8 +191,18 @@ public class NeoForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
         BlockState state = level.getBlockState(blockpos);
         if (state.hasBlockEntity()) {
             BlockEntity blockEntity = level.getBlockEntity(blockpos);
-            if (blockEntity != null && level.getCapability(Capabilities.ItemHandler.BLOCK, blockEntity.getBlockPos(), side) != null) {
-                return Optional.of(ImmutablePair.of(level.getCapability(Capabilities.ItemHandler.BLOCK, blockEntity.getBlockPos(), side), blockEntity));
+            if (blockEntity != null) {
+                IItemHandler handler = level.getCapability(Capabilities.ItemHandler.BLOCK, blockpos, state, blockEntity, side);
+                if (handler != null) {
+                    return Optional.of(ImmutablePair.of(handler, blockEntity));
+                }
+            }
+            //support vanilla inventory block entities without IItemHandler
+            if (blockEntity instanceof WorldlyContainer container) {
+                return Optional.of(ImmutablePair.of(new SidedInvWrapper(container, side), state));
+            }
+            if (blockEntity instanceof Container container) {
+                return Optional.of(ImmutablePair.of(new InvWrapper(container), state));
             }
         }
         //support vanilla inventory blocks without IItemHandler
