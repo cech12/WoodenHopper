@@ -3,20 +3,21 @@ package de.cech12.woodenhopper;
 import de.cech12.woodenhopper.block.NeoForgeWoodenHopperItemHandler;
 import de.cech12.woodenhopper.client.WoodenHopperScreen;
 import de.cech12.woodenhopper.platform.NeoForgeRegistryHelper;
-import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 
+@SuppressWarnings("unused")
 @Mod(Constants.MOD_ID)
-@Mod.EventBusSubscriber(modid= Constants.MOD_ID, bus= Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid= Constants.MOD_ID, bus= EventBusSubscriber.Bus.MOD)
 public class NeoForgeWoodenHopperMod {
 
     public NeoForgeWoodenHopperMod(IEventBus modEventBus) {
@@ -29,8 +30,8 @@ public class NeoForgeWoodenHopperMod {
 
     @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
-    public static void onClientRegister(FMLClientSetupEvent event) {
-        MenuScreens.register(Constants.WOODEN_HOPPER_MENU_TYPE.get(), WoodenHopperScreen::new);
+    public static void onMenuScreenRegister(RegisterMenuScreensEvent event) {
+        event.register(Constants.WOODEN_HOPPER_MENU_TYPE.get(), WoodenHopperScreen::new);
     }
 
     @SubscribeEvent

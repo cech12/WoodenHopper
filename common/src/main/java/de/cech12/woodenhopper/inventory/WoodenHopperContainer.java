@@ -3,13 +3,12 @@ package de.cech12.woodenhopper.inventory;
 import de.cech12.woodenhopper.Constants;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 public class WoodenHopperContainer extends AbstractContainerMenu {
     private final Container hopper;
@@ -41,7 +40,7 @@ public class WoodenHopperContainer extends AbstractContainerMenu {
      * Determines whether supplied player can use this container
      */
     @Override
-    public boolean stillValid(@Nonnull Player playerIn) {
+    public boolean stillValid(@NotNull Player playerIn) {
         return this.hopper.stillValid(playerIn);
     }
 
@@ -50,8 +49,8 @@ public class WoodenHopperContainer extends AbstractContainerMenu {
      * inventory and the other inventory(s).
      */
     @Override
-    @Nonnull
-    public ItemStack quickMoveStack(@Nonnull Player playerIn, int index) {
+    @NotNull
+    public ItemStack quickMoveStack(@NotNull Player playerIn, int index) {
         ItemStack itemstack = ItemStack.EMPTY;
         Slot slot = this.slots.get(index);
         if (slot != null && slot.hasItem()) {
@@ -79,7 +78,7 @@ public class WoodenHopperContainer extends AbstractContainerMenu {
      * Called when the container is closed.
      */
     @Override
-    public void removed(@Nonnull Player playerIn) {
+    public void removed(@NotNull Player playerIn) {
         super.removed(playerIn);
         this.hopper.stopOpen(playerIn);
     }

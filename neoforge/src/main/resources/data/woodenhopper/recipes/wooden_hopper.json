@@ -11,10 +11,10 @@
       "tag": "minecraft:planks"
     },
     "C": {
-      "tag": "forge:chests/wooden"
+      "tag": "c:chests/wooden"
     }
   },
   "result": {
-    "item": "woodenhopper:wooden_hopper"
+    "id": "woodenhopper:wooden_hopper"
   }
 }

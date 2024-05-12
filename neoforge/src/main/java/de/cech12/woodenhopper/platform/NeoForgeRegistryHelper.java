@@ -2,10 +2,10 @@ package de.cech12.woodenhopper.platform;
 
 import de.cech12.woodenhopper.Constants;
 import de.cech12.woodenhopper.block.WoodenHopperBlock;
+import de.cech12.woodenhopper.blockentity.NeoForgeWoodenHopperBlockEntity;
 import de.cech12.woodenhopper.blockentity.WoodenHopperBlockEntity;
 import de.cech12.woodenhopper.inventory.WoodenHopperContainer;
 import de.cech12.woodenhopper.platform.services.IRegistryHelper;
-import de.cech12.woodenhopper.blockentity.NeoForgeWoodenHopperBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.inventory.MenuType;
@@ -22,8 +22,7 @@ import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
-
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 public class NeoForgeRegistryHelper implements IRegistryHelper {
 
@@ -50,7 +49,7 @@ public class NeoForgeRegistryHelper implements IRegistryHelper {
     }
 
     @Override
-    public WoodenHopperBlockEntity getNewBlockEntity(@Nonnull BlockPos pos, @Nonnull BlockState state) {
+    public WoodenHopperBlockEntity getNewBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
         return new NeoForgeWoodenHopperBlockEntity(pos, state);
     }
 

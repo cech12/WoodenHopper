@@ -6,8 +6,7 @@ import de.cech12.woodenhopper.platform.services.IRegistryHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.state.BlockState;
-
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 public class FabricRegistryHelper implements IRegistryHelper {
 
@@ -17,7 +16,7 @@ public class FabricRegistryHelper implements IRegistryHelper {
     }
 
     @Override
-    public WoodenHopperBlockEntity getNewBlockEntity(@Nonnull BlockPos pos, @Nonnull BlockState state) {
+    public WoodenHopperBlockEntity getNewBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
         return new FabricWoodenHopperBlockEntity(pos, state);
     }
 

@@ -4,8 +4,7 @@ import de.cech12.woodenhopper.blockentity.WoodenHopperBlockEntity;
 import de.cech12.woodenhopper.platform.Services;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.wrapper.InvWrapper;
-
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 public class ForgeWoodenHopperItemHandler extends InvWrapper
 {
@@ -17,8 +16,8 @@ public class ForgeWoodenHopperItemHandler extends InvWrapper
     }
 
     @Override
-    @Nonnull
-    public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate)
+    @NotNull
+    public ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate)
     {
         if (simulate) {
             return super.insertItem(slot, stack, true);

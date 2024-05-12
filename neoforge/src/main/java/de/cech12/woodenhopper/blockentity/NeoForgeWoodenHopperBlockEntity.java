@@ -1,41 +1,37 @@
 package de.cech12.woodenhopper.blockentity;
 
 import de.cech12.woodenhopper.platform.Services;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.NonNullList;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.WorldlyContainer;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.HopperBlock;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.WorldlyContainerHolder;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.core.Direction;
-import net.minecraft.world.entity.EntitySelector;
-import net.minecraft.core.NonNullList;
-import net.minecraft.core.BlockPos;
-import net.minecraft.util.Mth;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.shapes.BooleanOp;
-import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.HopperBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.items.wrapper.InvWrapper;
 import net.neoforged.neoforge.items.wrapper.SidedInvWrapper;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public class NeoForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
 
@@ -46,19 +42,19 @@ public class NeoForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
     }
 
     @Override
-    public void load(@Nonnull CompoundTag nbt) {
-        super.load(nbt);
+    protected void loadAdditional(@NotNull CompoundTag nbt, @NotNull HolderLookup.Provider provider) {
+        super.loadAdditional(nbt, provider);
         inventory = new ItemStackHandler();
         if (!this.tryLoadLootTable(nbt)) {
-            this.inventory.deserializeNBT(nbt);
+            this.inventory.deserializeNBT(provider, nbt);
         }
     }
 
     @Override
-    public void saveAdditional(@Nonnull CompoundTag compound) {
-        super.saveAdditional(compound);
+    public void saveAdditional(@NotNull CompoundTag compound, @NotNull HolderLookup.Provider provider) {
+        super.saveAdditional(compound, provider);
         if (!this.trySaveLootTable(compound)) {
-            compound.merge(this.inventory.serializeNBT());
+            compound.merge(this.inventory.serializeNBT(provider));
         }
     }
 
@@ -71,13 +67,13 @@ public class NeoForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
     }
 
     @Override
-    @Nonnull
+    @NotNull
     protected NonNullList<ItemStack> getItems() {
         return NonNullList.withSize(1, this.inventory.getStackInSlot(0));
     }
 
     @Override
-    protected void setItems(@Nonnull NonNullList<ItemStack> itemsIn) {
+    protected void setItems(@NotNull NonNullList<ItemStack> itemsIn) {
         if (itemsIn.size() == 1) {
             this.inventory.setStackInSlot(0, itemsIn.get(0));
         }
@@ -88,7 +84,7 @@ public class NeoForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
      * Removes up to a specified number of items from an inventory slot and returns them in a new stack.
      */
     @Override
-    @Nonnull
+    @NotNull
     public ItemStack removeItem(int index, int count) {
         this.unpackLootTable(null);
         ItemStack stack = this.inventory.extractItem(index, count, false);
@@ -100,7 +96,7 @@ public class NeoForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
      * Removes a stack from the given slot and returns it.
      */
     @Override
-    @Nonnull
+    @NotNull
     public ItemStack removeItemNoUpdate(int index) {
         this.unpackLootTable(null);
         ItemStack stack = this.inventory.getStackInSlot(index);
@@ -113,7 +109,7 @@ public class NeoForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
      * Sets the given item stack to the specified slot in the inventory (can be crafting or armor sections).
      */
     @Override
-    public void setItem(int index, @Nonnull ItemStack stack) {
+    public void setItem(int index, @NotNull ItemStack stack) {
         this.unpackLootTable(null);
         this.inventory.setStackInSlot(index, stack);
         this.setChanged();
@@ -285,7 +281,7 @@ public class NeoForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
                                 for (int j = 0; j < hopper.getContainerSize(); j++) {
                                     ItemStack destStack = hopper.getItem(j);
                                     if (hopper.canPlaceItem(j, extractItem) && (destStack.isEmpty() || destStack.getCount() < destStack.getMaxStackSize()
-                                            && destStack.getCount() < hopper.getMaxStackSize() && ItemHandlerHelper.canItemStacksStack(extractItem, destStack))) {
+                                            && destStack.getCount() < hopper.getMaxStackSize() && ItemStack.isSameItemSameComponents(extractItem, destStack))) {
                                         extractItem = handler.extractItem(i, 1, false);
                                         if (destStack.isEmpty()) {
                                             hopper.setItem(j, extractItem);
@@ -327,19 +323,13 @@ public class NeoForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
         return flag;
     }
 
-    private static List<ItemEntity> getCaptureItems(NeoForgeWoodenHopperBlockEntity p_200115_0_) {
-        return p_200115_0_.getSuckShape().toAabbs().stream().flatMap((p_200110_1_) -> {
-            return p_200115_0_.getLevel().getEntitiesOfClass(ItemEntity.class, p_200110_1_.move(p_200115_0_.getLevelX() - 0.5D, p_200115_0_.getLevelY() - 0.5D, p_200115_0_.getLevelZ() - 0.5D), EntitySelector.ENTITY_STILL_ALIVE).stream();
-        }).collect(Collectors.toList());
-    }
-
     @Override
-    public void onEntityCollision(Entity p_200113_1_) {
+    public void onEntityCollision(Entity entity) {
         if (Services.CONFIG.isPullItemsFromWorldEnabled()) {
-            if (p_200113_1_ instanceof ItemEntity) {
-                BlockPos blockpos = this.getBlockPos();
-                if (Shapes.joinIsNotEmpty(Shapes.create(p_200113_1_.getBoundingBox().move((-blockpos.getX()), (-blockpos.getY()), (-blockpos.getZ()))), this.getSuckShape(), BooleanOp.AND)) {
-                    this.updateHopper(() -> captureItem(this, (ItemEntity)p_200113_1_));
+            if (entity instanceof ItemEntity itemEntity) {
+                BlockPos pos = this.getBlockPos();
+                if (!itemEntity.getItem().isEmpty() && entity.getBoundingBox().move((-pos.getX()), (-pos.getY()), (-pos.getZ())).intersects(this.getSuckAabb())) {
+                    this.updateHopper(() -> captureItem(this, (ItemEntity)entity));
                 }
             }
         }

@@ -8,35 +8,31 @@ import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.NonNullList;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Mth;
 import net.minecraft.world.ContainerHelper;
-import net.minecraft.world.entity.vehicle.ContainerEntity;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.HopperBlock;
+import net.minecraft.world.WorldlyContainerHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.WorldlyContainerHolder;
+import net.minecraft.world.entity.vehicle.ContainerEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.core.Direction;
-import net.minecraft.world.entity.EntitySelector;
-import net.minecraft.core.NonNullList;
-import net.minecraft.core.BlockPos;
-import net.minecraft.util.Mth;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.shapes.BooleanOp;
-import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.HopperBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public class FabricWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
 
@@ -49,19 +45,19 @@ public class FabricWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
     }
 
     @Override
-    public void load(@Nonnull CompoundTag compoundTag) {
-        super.load(compoundTag);
+    protected void loadAdditional(@NotNull CompoundTag compoundTag, @NotNull HolderLookup.Provider provider) {
+        super.loadAdditional(compoundTag, provider);
         this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
         if (!this.tryLoadLootTable(compoundTag)) {
-            ContainerHelper.loadAllItems(compoundTag, this.items);
+            ContainerHelper.loadAllItems(compoundTag, this.items, provider);
         }
     }
 
     @Override
-    public void saveAdditional(@Nonnull CompoundTag compoundTag) {
-        super.saveAdditional(compoundTag);
+    public void saveAdditional(@NotNull CompoundTag compoundTag, @NotNull HolderLookup.Provider provider) {
+        super.saveAdditional(compoundTag, provider);
         if (!this.trySaveLootTable(compoundTag)) {
-            ContainerHelper.saveAllItems(compoundTag, this.items);
+            ContainerHelper.saveAllItems(compoundTag, this.items, provider);
         }
     }
 
@@ -74,13 +70,13 @@ public class FabricWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
     }
 
     @Override
-    @Nonnull
+    @NotNull
     protected NonNullList<ItemStack> getItems() {
         return this.items;
     }
 
     @Override
-    protected void setItems(@Nonnull NonNullList<ItemStack> nonNullList) {
+    protected void setItems(@NotNull NonNullList<ItemStack> nonNullList) {
         this.items = nonNullList;
     }
 
@@ -88,7 +84,7 @@ public class FabricWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
      * Removes up to a specified number of items from an inventory slot and returns them in a new stack.
      */
     @Override
-    @Nonnull
+    @NotNull
     public ItemStack removeItem(int index, int count) {
         this.unpackLootTable(null);
         ItemStack stack = ContainerHelper.removeItem(this.getItems(), index, count);
@@ -100,7 +96,7 @@ public class FabricWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
      * Removes a stack from the given slot and returns it.
      */
     @Override
-    @Nonnull
+    @NotNull
     public ItemStack removeItemNoUpdate(int index) {
         this.unpackLootTable(null);
         ItemStack stack = ContainerHelper.takeItem(this.getItems(), index);
@@ -112,7 +108,7 @@ public class FabricWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
      * Sets the given item stack to the specified slot in the inventory (can be crafting or armor sections).
      */
     @Override
-    public void setItem(int index, @Nonnull ItemStack itemStack) {
+    public void setItem(int index, @NotNull ItemStack itemStack) {
         this.unpackLootTable(null);
         this.getItems().set(index, itemStack);
         if (itemStack.getCount() > this.getMaxStackSize()) {
@@ -274,7 +270,7 @@ public class FabricWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
                                     for (int j = 0; j < hopper.getContainerSize(); j++) {
                                         ItemStack destStack = hopper.getItem(j);
                                         if (hopper.canPlaceItem(j, extractedItem) && (destStack.isEmpty() || destStack.getCount() < destStack.getMaxStackSize()
-                                                && destStack.getCount() < hopper.getMaxStackSize() && canItemStacksStack(extractedItem, destStack))) {
+                                                && destStack.getCount() < hopper.getMaxStackSize() && ItemStack.isSameItemSameComponents(extractedItem, destStack))) {
                                             if (storage.extract(slot.getResource(), 1, transaction) > 0) {
                                                 if (destStack.isEmpty()) {
                                                     hopper.setItem(j, extractedItem);
@@ -307,14 +303,6 @@ public class FabricWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
                 });
     }
 
-    private static boolean canItemStacksStack(@Nonnull ItemStack a, @Nonnull ItemStack b) {
-        if (!a.isEmpty() && ItemStack.isSameItem(a, b) && a.hasTag() == b.hasTag()) {
-            return (!a.hasTag() || Objects.equals(a.getTag(), b.getTag()));
-        } else {
-            return false;
-        }
-    }
-
     private static boolean captureItem(FabricWoodenHopperBlockEntity hopper, ItemEntity p_200114_1_) {
         boolean flag = false;
         ItemStack itemstack = p_200114_1_.getItem().copy();
@@ -328,22 +316,15 @@ public class FabricWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
         return flag;
     }
 
-    private static List<ItemEntity> getCaptureItems(FabricWoodenHopperBlockEntity p_200115_0_) {
-        return p_200115_0_.getSuckShape().toAabbs().stream().flatMap((p_200110_1_) -> {
-            return p_200115_0_.getLevel().getEntitiesOfClass(ItemEntity.class, p_200110_1_.move(p_200115_0_.getLevelX() - 0.5D, p_200115_0_.getLevelY() - 0.5D, p_200115_0_.getLevelZ() - 0.5D), EntitySelector.ENTITY_STILL_ALIVE).stream();
-        }).collect(Collectors.toList());
-    }
-
     @Override
-    public void onEntityCollision(Entity p_200113_1_) {
+    public void onEntityCollision(Entity entity) {
         if (Services.CONFIG.isPullItemsFromWorldEnabled()) {
-            if (p_200113_1_ instanceof ItemEntity) {
-                BlockPos blockpos = this.getBlockPos();
-                if (Shapes.joinIsNotEmpty(Shapes.create(p_200113_1_.getBoundingBox().move((-blockpos.getX()), (-blockpos.getY()), (-blockpos.getZ()))), this.getSuckShape(), BooleanOp.AND)) {
-                    this.updateHopper(() -> captureItem(this, (ItemEntity)p_200113_1_));
+            if (entity instanceof ItemEntity itemEntity) {
+                BlockPos pos = this.getBlockPos();
+                if (!itemEntity.getItem().isEmpty() && entity.getBoundingBox().move((-pos.getX()), (-pos.getY()), (-pos.getZ())).intersects(this.getSuckAabb())) {
+                    this.updateHopper(() -> captureItem(this, (ItemEntity)entity));
                 }
             }
         }
     }
-
 }
