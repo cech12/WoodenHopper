@@ -6,7 +6,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
@@ -17,8 +16,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.ItemStackHandler;
@@ -155,10 +154,7 @@ public class ForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
 
     @Override
     protected Optional<Pair<Object, Object>> getItemHandler(Level level, double x, double y, double z, final Direction side) {
-        int i = Mth.floor(x);
-        int j = Mth.floor(y);
-        int k = Mth.floor(z);
-        BlockPos blockpos = new BlockPos(i, j, k);
+        BlockPos blockpos = BlockPos.containing(x, y, z);
         BlockState state = level.getBlockState(blockpos);
         if (state.hasBlockEntity()) {
             BlockEntity blockEntity = level.getBlockEntity(blockpos);
@@ -182,13 +178,20 @@ public class ForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
             return Optional.of(ImmutablePair.of(new SidedInvWrapper(((WorldlyContainerHolder)block).getContainer(state, level, blockpos), side), state));
         }
         //get entities with item handlers
-        List<Entity> list = level.getEntities((Entity)null,
-                new AABB(x - 0.5D, y - 0.5D, z - 0.5D, x + 0.5D, y + 0.5D, z + 0.5D),
-                (entity) -> !(entity instanceof LivingEntity) && entity.isAlive() && entity.getCapability(ForgeCapabilities.ITEM_HANDLER, side).isPresent());
+        List<Entity> list = getAllAliveEntitiesAt(level, x, y, z,
+                entity -> entity instanceof Container || !(entity instanceof LivingEntity) && entity.getCapability(ForgeCapabilities.ITEM_HANDLER, side).isPresent());
         if (!list.isEmpty()) {
             Entity entity = list.get(level.random.nextInt(list.size()));
-            return entity.getCapability(ForgeCapabilities.ITEM_HANDLER, side)
-                    .map(capability -> ImmutablePair.of(capability, entity));
+            LazyOptional<IItemHandler> cap = entity.getCapability(ForgeCapabilities.ITEM_HANDLER, side);
+            if (cap.isPresent()) {
+                return cap.map(capability -> ImmutablePair.of(capability, entity));
+            }
+            if (entity instanceof WorldlyContainer container) {
+                return Optional.of(ImmutablePair.of(new SidedInvWrapper(container, side), entity));
+            }
+            if (entity instanceof Container containerEntity) {
+                return Optional.of(ImmutablePair.of(new InvWrapper((containerEntity)), entity));
+            }
         }
         return Optional.empty();
     }

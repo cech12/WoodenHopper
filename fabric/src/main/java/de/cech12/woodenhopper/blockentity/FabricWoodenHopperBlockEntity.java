@@ -12,7 +12,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.util.Mth;
+import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.WorldlyContainerHolder;
 import net.minecraft.world.entity.Entity;
@@ -22,7 +22,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -159,10 +158,7 @@ public class FabricWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
 
     @Override
     protected Optional<Pair<Object, Object>> getItemHandler(Level level, double x, double y, double z, final Direction side) {
-        int i = Mth.floor(x);
-        int j = Mth.floor(y);
-        int k = Mth.floor(z);
-        BlockPos blockpos = new BlockPos(i, j, k);
+        BlockPos blockpos = BlockPos.containing(x, y, z);
         BlockState state = level.getBlockState(blockpos);
         if (state.hasBlockEntity()) {
             BlockEntity blockEntity = level.getBlockEntity(blockpos);
@@ -172,16 +168,19 @@ public class FabricWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
                     return Optional.of(ImmutablePair.of(storage, blockEntity));
                 }
             }
+            //support vanilla inventory block entities without IItemHandler
+            if (blockEntity instanceof Container container) {
+                return Optional.of(ImmutablePair.of(InventoryStorage.of(container, side), state));
+            }
         }
         //support vanilla inventory blocks without ItemStorage
         Block block = state.getBlock();
-        if (block instanceof WorldlyContainerHolder) {
-            return Optional.of(ImmutablePair.of(InventoryStorage.of(((WorldlyContainerHolder)block).getContainer(state, level, blockpos), side), state));
+        if (block instanceof WorldlyContainerHolder containerHolder) {
+            return Optional.of(ImmutablePair.of(InventoryStorage.of(containerHolder.getContainer(state, level, blockpos), side), state));
         }
         //get entities with item handlers
-        List<Entity> list = level.getEntities((Entity)null,
-                new AABB(x - 0.5D, y - 0.5D, z - 0.5D, x + 0.5D, y + 0.5D, z + 0.5D),
-                (entity) -> (entity instanceof ContainerEntity) && entity.isAlive()); //TODO modded entities with Item Storage?!
+        List<Entity> list = getAllAliveEntitiesAt(level, x, y, z,
+                entity -> entity instanceof Container);
         if (!list.isEmpty()) {
             Entity entity = list.get(level.random.nextInt(list.size()));
             return Optional.of(ImmutablePair.of(InventoryStorage.of((ContainerEntity) entity, side), entity));

@@ -8,8 +8,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -18,13 +18,16 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.HopperBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.Hopper;
+import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public abstract class WoodenHopperBlockEntity extends RandomizableContainerBlockEntity implements Hopper {
@@ -105,6 +108,11 @@ public abstract class WoodenHopperBlockEntity extends RandomizableContainerBlock
         return this.tickedGameTime;
     }
 
+    public static List<Entity> getAllAliveEntitiesAt(Level level, double x, double y, double z, Predicate<? super Entity> filter) {
+        return level.getEntities((Entity)null, new AABB(x - 0.5D, y - 0.5D, z - 0.5D, x + 0.5D, y + 0.5D, z + 0.5D),
+                entity -> entity.isAlive() && filter.test(entity));
+    }
+
     public void onItemEntityIsCaptured(ItemEntity itemEntity) {
         this.updateHopper(() -> captureItem(itemEntity));
     }
@@ -136,9 +144,13 @@ public abstract class WoodenHopperBlockEntity extends RandomizableContainerBlock
                 }).orElseGet(() -> {
                     //capture item
                     if (Services.CONFIG.isPullItemsFromWorldEnabled()) {
-                        for (ItemEntity itementity : getCaptureItems(this)) {
-                            if (this.captureItem(itementity)) {
-                                return true;
+                        BlockPos pos = BlockPos.containing(this.getLevelX(), this.getLevelY() + 1D, this.getLevelZ());
+                        BlockState aboveBlockState = this.level.getBlockState(pos);
+                        if (aboveBlockState.is(BlockTags.DOES_NOT_BLOCK_HOPPERS) || !aboveBlockState.isCollisionShapeFullBlock(this.level, pos)) {
+                            for (ItemEntity itementity : HopperBlockEntity.getItemsAtAndAbove(this.level, this)) {
+                                if (this.captureItem(itementity)) {
+                                    return true;
+                                }
                             }
                         }
                     }
@@ -154,10 +166,6 @@ public abstract class WoodenHopperBlockEntity extends RandomizableContainerBlock
             }
             destinationHopper.setTransferCooldown(Services.CONFIG.getCooldown() - k);
         }
-    }
-
-    private List<ItemEntity> getCaptureItems(WoodenHopperBlockEntity hopperEntity) {
-        return hopperEntity.getLevel().getEntitiesOfClass(ItemEntity.class, hopperEntity.getSuckAabb().move(hopperEntity.getLevelX() - 0.5D, hopperEntity.getLevelY() - 0.5D, hopperEntity.getLevelZ() - 0.5D), EntitySelector.ENTITY_STILL_ALIVE);
     }
 
     protected void updateHopper(Supplier<Boolean> p_200109_1_) {

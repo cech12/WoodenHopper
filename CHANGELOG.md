@@ -3,11 +3,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Forge Recommended Versioning](https://mcforge.readthedocs.io/en/latest/conventions/versioning/).
 
-## [1.20.6-2.3.0.0] - 2024-05-??
+## [1.20.6-2.3.0.0] - 2024-05-14
+### Added
+- use the vanilla "does_not_block_hoppers" block tag to enhance performance
+- support more modded container entities
+
 ### Changed
 - Updated to Minecraft 1.20.6 (Fabric 0.98.0+1.20.6, Neoforge 20.6.61-beta, Forge 50.0.14)
-- Updated Cloth Config support (Fabric 14.0.126)
-- Updated ModMenu support (Fabric 10.0.0-beta.1)
+- Updated Cloth Config support (14.0.126) (Fabric)
+- Updated ModMenu support (10.0.0-beta.1) (Fabric)
+- internal code refactoring
 
 ## [1.20.4-2.2.1.0] - 2024-05-11
 ### Added
