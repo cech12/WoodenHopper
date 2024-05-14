@@ -10,8 +10,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ### Changed
 - Updated to Minecraft 1.20.6 (Fabric 0.98.0+1.20.6, Neoforge 20.6.61-beta, Forge 50.0.14)
-- Updated Cloth Config support (14.0.126) (Fabric)
-- Updated ModMenu support (10.0.0-beta.1) (Fabric)
+- Updated Cloth Config support (14.0.126) (Fabric/Quilt)
+- Updated ModMenu support (10.0.0-beta.1) (Fabric/Quilt)
+- changed advancements & recipes to match the reworked conventional tags (Fabric/Quilt & Neoforge)
 - internal code refactoring
 
 ## [1.20.4-2.2.1.0] - 2024-05-11
