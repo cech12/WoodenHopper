@@ -1,5 +1,5 @@
 {
   "block.woodenhopper.wooden_hopper": "Деревянная воронка",
   "block.woodenhopper.wooden_hopper.desc.cannotAbsorbItemsFromWorld": "Не затягивает предметы, лежащие над ней.",
-  "block.woodenhopper.wooden_hopper.desc.cannotAbsorbItemsFromInventories": "Не затягивает предметы из инвентарей над ней.",
+  "block.woodenhopper.wooden_hopper.desc.cannotAbsorbItemsFromInventories": "Не затягивает предметы из инвентарей над ней."
 }

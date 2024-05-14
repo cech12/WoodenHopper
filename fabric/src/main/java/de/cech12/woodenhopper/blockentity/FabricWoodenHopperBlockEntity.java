@@ -31,7 +31,7 @@ import java.util.Optional;
 
 public class FabricWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
 
-    InventoryStorage inventory = InventoryStorage.of(this, null);
+    private final InventoryStorage inventory = InventoryStorage.of(this, null);
     private NonNullList<ItemStack> items;
 
     public FabricWoodenHopperBlockEntity(BlockPos pos, BlockState state) {
