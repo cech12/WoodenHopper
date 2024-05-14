@@ -13,11 +13,11 @@
 
   "text.autoconfig.woodenhopper.option.PULL_ITEMS_FROM_WORLD_ENABLED": "Wooden Hopper pulls from world",
   "text.autoconfig.woodenhopper.option.PULL_ITEMS_FROM_WORLD_ENABLED.@Tooltip[0]": "§6§lWooden Hopper pulls items from world",
-  "text.autoconfig.woodenhopper.option.PULL_ITEMS_FROM_WORLD_ENABLED.@Tooltip[1]": "Whether or not the wooden hopper can pull item entities lying above it.",
+  "text.autoconfig.woodenhopper.option.PULL_ITEMS_FROM_WORLD_ENABLED.@Tooltip[1]": "Whether the wooden hopper can pull item entities lying above it.",
   "text.autoconfig.woodenhopper.option.PULL_ITEMS_FROM_WORLD_ENABLED.@Tooltip[2]": "§7§oDefault: true",
 
   "text.autoconfig.woodenhopper.option.PULL_ITEMS_FROM_INVENTORIES_ENABLED": "Wooden Hopper pulls from inventories",
   "text.autoconfig.woodenhopper.option.PULL_ITEMS_FROM_INVENTORIES_ENABLED.@Tooltip[0]": "§6§lWooden Hopper pulls items from inventories",
-  "text.autoconfig.woodenhopper.option.PULL_ITEMS_FROM_INVENTORIES_ENABLED.@Tooltip[1]": "Whether or not the wooden hopper can pull items from inventories above it.",
+  "text.autoconfig.woodenhopper.option.PULL_ITEMS_FROM_INVENTORIES_ENABLED.@Tooltip[1]": "Whether the wooden hopper can pull items from inventories above it.",
   "text.autoconfig.woodenhopper.option.PULL_ITEMS_FROM_INVENTORIES_ENABLED.@Tooltip[2]": "§7§oDefault: true"
 }

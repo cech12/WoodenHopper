@@ -136,7 +136,7 @@ public abstract class WoodenHopperBlockEntity extends RandomizableContainerBlock
 
     protected abstract boolean isNotFull(Object itemHandler);
 
-    protected abstract boolean pullItemsFromItemHandler(Object itemHandler, Object destination);
+    protected abstract boolean pullItemsFromItemHandler(Object itemHandler);
 
     protected abstract Object getOwnItemHandler();
 
@@ -151,7 +151,7 @@ public abstract class WoodenHopperBlockEntity extends RandomizableContainerBlock
                 .map(itemHandlerResult -> {
                     //get item from item handler
                     if (Services.CONFIG.isPullItemsFromInventoriesEnabled()) {
-                        return pullItemsFromItemHandler(itemHandlerResult.getKey(), itemHandlerResult.getValue());
+                        return pullItemsFromItemHandler(itemHandlerResult.getKey());
                     }
                     return false;
                 }).orElseGet(() -> {

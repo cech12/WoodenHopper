@@ -25,7 +25,7 @@ import net.minecraft.world.level.material.MapColor;
 
 public class FabricWoodenHopperMod implements ModInitializer {
 
-    private static final Block WOODEN_HOPPER_BLOCK = Registry.register(BuiltInRegistries.BLOCK, location("wooden_hopper"), new FabricWoodenHopperBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.5F).sound(SoundType.WOOD).noOcclusion()));;
+    private static final Block WOODEN_HOPPER_BLOCK = Registry.register(BuiltInRegistries.BLOCK, location("wooden_hopper"), new FabricWoodenHopperBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.5F).sound(SoundType.WOOD).noOcclusion()));
     private static final Item WOODEN_HOPPER_ITEM = Registry.register(BuiltInRegistries.ITEM, location("wooden_hopper"), new BlockItem(WOODEN_HOPPER_BLOCK, new Item.Properties()));
     private static final BlockEntityType<? extends WoodenHopperBlockEntity> WOODEN_HOPPER_BLOCK_ENTITY_TYPE = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, location("wooden_hopper"), BlockEntityType.Builder.of(FabricWoodenHopperBlockEntity::new, WOODEN_HOPPER_BLOCK).build(null));
     private static final MenuType<WoodenHopperContainer> WOODEN_HOPPER_MENU_TYPE = Registry.register(BuiltInRegistries.MENU, location("woodenhopper"), new ExtendedScreenHandlerType<>((pWindowID, pInventory, pData) -> new WoodenHopperContainer(pWindowID, pInventory), HopperData.CODEC));
@@ -53,9 +53,7 @@ public class FabricWoodenHopperMod implements ModInitializer {
     public void onInitialize() {
         CommonLoader.init();
         //Register item in the creative tab.
-        ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.REDSTONE_BLOCKS).register(content -> {
-            content.accept(Constants.WOODEN_HOPPER_ITEM.get());
-        });
+        ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.REDSTONE_BLOCKS).register(content -> content.accept(Constants.WOODEN_HOPPER_ITEM.get()));
     }
 
 }

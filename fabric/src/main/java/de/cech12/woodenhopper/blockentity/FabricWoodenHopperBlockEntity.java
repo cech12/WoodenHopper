@@ -113,7 +113,7 @@ public class FabricWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
     }
 
     @Override
-    protected boolean pullItemsFromItemHandler(Object itemHandler, Object destination) {
+    protected boolean pullItemsFromItemHandler(Object itemHandler) {
         Storage<ItemVariant> storage = (Storage<ItemVariant>) itemHandler;
         try (Transaction transaction = Transaction.openOuter()) {
             for (StorageView<ItemVariant> slot : storage.nonEmptyViews()) {
@@ -200,11 +200,11 @@ public class FabricWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
     }
 
     @Override
-    protected ItemStack putStackInInventoryAllSlots(BlockEntity source, Object destination, Object destInventoryObj, ItemStack stack) {
-        Storage<ItemVariant> destInventory = (Storage<ItemVariant>) destInventoryObj;
-        boolean inventoryWasEmpty = isEmpty(destInventory);
+    protected ItemStack putStackInInventoryAllSlots(BlockEntity source, Object destination, Object destinationItemHandlerObj, ItemStack stack) {
+        Storage<ItemVariant> storage = (Storage<ItemVariant>) destinationItemHandlerObj;
+        boolean inventoryWasEmpty = isEmpty(storage);
         try (Transaction transaction = Transaction.openOuter()) {
-            long count = destInventory.insert(ItemVariant.of(stack), stack.getCount(), transaction);
+            long count = storage.insert(ItemVariant.of(stack), stack.getCount(), transaction);
             if (count > 0) {
                 stack.shrink((int)count);
                 updateCooldown(inventoryWasEmpty, source, destination);

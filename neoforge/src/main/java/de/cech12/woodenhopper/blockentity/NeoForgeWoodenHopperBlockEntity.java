@@ -197,7 +197,7 @@ public class NeoForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
     }
 
     @Override
-    protected boolean pullItemsFromItemHandler(Object itemHandler, Object destination) {
+    protected boolean pullItemsFromItemHandler(Object itemHandler) {
         IItemHandler handler = (IItemHandler) itemHandler;
         for (int i = 0; i < handler.getSlots(); i++) {
             ItemStack extractItem = handler.extractItem(i, 1, true);

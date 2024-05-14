@@ -72,7 +72,7 @@ public class ForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
     @Override
     protected void setItems(@NotNull NonNullList<ItemStack> itemsIn) {
         if (itemsIn.size() == 1) {
-            this.inventory.setStackInSlot(0, itemsIn.get(0));
+            this.inventory.setStackInSlot(0, itemsIn.getFirst());
         }
         //this.setChanged(); //don't set it as changed to be compatible with Canary
     }
@@ -206,7 +206,7 @@ public class ForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
     }
 
     @Override
-    protected boolean pullItemsFromItemHandler(Object itemHandlerObj, Object destination) {
+    protected boolean pullItemsFromItemHandler(Object itemHandlerObj) {
         IItemHandler handler = (IItemHandler) itemHandlerObj;
         for (int i = 0; i < handler.getSlots(); i++) {
             ItemStack extractItem = handler.extractItem(i, 1, true);
