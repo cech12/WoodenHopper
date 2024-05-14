@@ -69,7 +69,7 @@ public class NeoForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
     @Override
     protected void setItems(@NotNull NonNullList<ItemStack> itemsIn) {
         if (itemsIn.size() == 1) {
-            this.inventory.setStackInSlot(0, itemsIn.get(0));
+            this.inventory.setStackInSlot(0, itemsIn.getFirst());
         }
         //this.setChanged(); //don't set it as changed to be compatible with Canary
     }
@@ -107,19 +107,6 @@ public class NeoForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
         this.unpackLootTable(null);
         this.inventory.setStackInSlot(index, stack);
         this.setChanged();
-    }
-
-    public static void tick(Level level, BlockPos pos, BlockState state, WoodenHopperBlockEntity entity) {
-        if (level != null && !level.isClientSide) {
-            entity.transferCooldown--;
-            entity.tickedGameTime = level.getGameTime();
-            if (!entity.isOnTransferCooldown()) {
-                entity.setTransferCooldown(0);
-                if (entity instanceof NeoForgeWoodenHopperBlockEntity blockEntity) {
-                    blockEntity.updateHopper(blockEntity::pullItems);
-                }
-            }
-        }
     }
 
     @Override

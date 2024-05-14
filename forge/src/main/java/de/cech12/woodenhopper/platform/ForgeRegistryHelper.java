@@ -12,7 +12,6 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -40,11 +39,6 @@ public class ForgeRegistryHelper implements IRegistryHelper {
 
     private static RegistryObject<Item> fromBlock(RegistryObject<Block> block) {
         return ITEMS.register(block.getId().getPath(), () -> new BlockItem(block.get(), new Item.Properties()));
-    }
-
-    @Override
-    public BlockEntityTicker<WoodenHopperBlockEntity> getBlockTicker() {
-        return ForgeWoodenHopperBlockEntity::tick;
     }
 
     @Override

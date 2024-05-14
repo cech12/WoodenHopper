@@ -118,19 +118,6 @@ public class ForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
         return new ForgeWoodenHopperItemHandler(this);
     }
 
-    public static void tick(Level level, BlockPos pos, BlockState state, WoodenHopperBlockEntity entity) {
-        if (level != null && !level.isClientSide) {
-            entity.transferCooldown--;
-            entity.tickedGameTime = level.getGameTime();
-            if (!entity.isOnTransferCooldown()) {
-                entity.setTransferCooldown(0);
-                if (entity instanceof ForgeWoodenHopperBlockEntity blockEntity) {
-                    blockEntity.updateHopper(blockEntity::pullItems);
-                }
-            }
-        }
-    }
-
     @Override
     protected ItemStack putStackInInventoryAllSlots(BlockEntity source, Object destination, Object destInventoryObj, ItemStack stack) {
         IItemHandler destInventory = (IItemHandler) destInventoryObj;

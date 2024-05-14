@@ -27,7 +27,7 @@ public class NeoForgeWoodenHopperItemHandler extends InvWrapper
             stack = super.insertItem(slot, stack, false);
             if (wasEmpty && originalStackSize > stack.getCount())
             {
-                if (!hopper.mayTransfer())
+                if (hopper.mayNotTransfer())
                 {
                     hopper.setTransferCooldown(Services.CONFIG.getCooldown());
                 }

@@ -53,7 +53,7 @@ public class WoodenHopperBlock extends HopperBlock {
     @Override
     @Nullable
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level level, @NotNull BlockState state, @NotNull BlockEntityType<T> entityType) {
-        return createTickerHelper(entityType, Constants.WOODEN_HOPPER_BLOCK_ENTITY_TYPE.get(), Services.REGISTRY.getBlockTicker());
+        return createTickerHelper(entityType, Constants.WOODEN_HOPPER_BLOCK_ENTITY_TYPE.get(), (lev, pos, sta, entity) -> WoodenHopperBlockEntity.tick(lev, entity));
     }
 
     @Override

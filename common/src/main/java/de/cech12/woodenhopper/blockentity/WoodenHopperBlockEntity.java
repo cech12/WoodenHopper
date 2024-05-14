@@ -96,12 +96,12 @@ public abstract class WoodenHopperBlockEntity extends RandomizableContainerBlock
         this.transferCooldown = ticks;
     }
 
-    protected boolean isOnTransferCooldown() {
-        return this.transferCooldown > 0;
+    protected boolean isNotOnTransferCooldown() {
+        return this.transferCooldown <= 0;
     }
 
-    public boolean mayTransfer() {
-        return this.transferCooldown > Services.CONFIG.getCooldown();
+    public boolean mayNotTransfer() {
+        return this.transferCooldown <= Services.CONFIG.getCooldown();
     }
 
     protected long getLastUpdateTime() {
@@ -111,6 +111,19 @@ public abstract class WoodenHopperBlockEntity extends RandomizableContainerBlock
     public static List<Entity> getAllAliveEntitiesAt(Level level, double x, double y, double z, Predicate<? super Entity> filter) {
         return level.getEntities((Entity)null, new AABB(x - 0.5D, y - 0.5D, z - 0.5D, x + 0.5D, y + 0.5D, z + 0.5D),
                 entity -> entity.isAlive() && filter.test(entity));
+    }
+
+    public static void tick(Level level, WoodenHopperBlockEntity entity) {
+        if (level != null && !level.isClientSide) {
+            entity.transferCooldown--;
+            entity.tickedGameTime = level.getGameTime();
+            if (entity.isNotOnTransferCooldown()) {
+                entity.setTransferCooldown(0);
+                if (entity instanceof WoodenHopperBlockEntity blockEntity) {
+                    blockEntity.updateHopper(blockEntity::pullItems);
+                }
+            }
+        }
     }
 
     public void onItemEntityIsCaptured(ItemEntity itemEntity) {
@@ -159,7 +172,7 @@ public abstract class WoodenHopperBlockEntity extends RandomizableContainerBlock
     }
 
     protected void updateCooldown(boolean inventoryWasEmpty, BlockEntity source, Object destination) {
-        if (inventoryWasEmpty && destination instanceof WoodenHopperBlockEntity destinationHopper && !destinationHopper.mayTransfer()) {
+        if (inventoryWasEmpty && destination instanceof WoodenHopperBlockEntity destinationHopper && destinationHopper.mayNotTransfer()) {
             int k = 0;
             if (source instanceof WoodenHopperBlockEntity && destinationHopper.getLastUpdateTime() >= ((WoodenHopperBlockEntity) source).getLastUpdateTime()) {
                 k = 1;
@@ -170,7 +183,7 @@ public abstract class WoodenHopperBlockEntity extends RandomizableContainerBlock
 
     protected void updateHopper(Supplier<Boolean> p_200109_1_) {
         if (this.level != null && !this.level.isClientSide) {
-            if (!this.isOnTransferCooldown() && this.getBlockState().getValue(HopperBlock.ENABLED)) {
+            if (this.isNotOnTransferCooldown() && this.getBlockState().getValue(HopperBlock.ENABLED)) {
                 boolean flag = false;
                 if (!this.isEmpty()) {
                     flag = this.transferItemsOut();
