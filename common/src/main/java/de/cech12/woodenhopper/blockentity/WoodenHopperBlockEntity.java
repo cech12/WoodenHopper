@@ -4,6 +4,7 @@ import de.cech12.woodenhopper.Constants;
 import de.cech12.woodenhopper.inventory.WoodenHopperContainer;
 import de.cech12.woodenhopper.platform.Services;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -12,12 +13,19 @@ import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.HopperBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.Hopper;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 public abstract class WoodenHopperBlockEntity extends RandomizableContainerBlockEntity implements Hopper {
 
@@ -97,9 +105,122 @@ public abstract class WoodenHopperBlockEntity extends RandomizableContainerBlock
         return this.tickedGameTime;
     }
 
-    public abstract void onEntityCollision(Entity entity);
+    public void onItemEntityIsCaptured(ItemEntity itemEntity) {
+        this.updateHopper(() -> captureItem(itemEntity));
+    }
 
-    protected static List<ItemEntity> getCaptureItems(WoodenHopperBlockEntity hopperEntity) {
+    protected abstract ItemStack putStackInInventoryAllSlots(BlockEntity source, Object destination, Object destInventory, ItemStack stack);
+
+    protected abstract Optional<Pair<Object, Object>> getItemHandler(Level level, double x, double y, double z, final Direction side);
+
+    protected abstract boolean isNotFull(Object itemHandler);
+
+    protected abstract boolean pullItemsFromItemHandler(Object itemHandler, Object destination);
+
+    protected abstract Object getOwnItemHandler();
+
+    /**
+     * Pull dropped EntityItems from the world above the hopper and items
+     * from any inventory attached to this hopper into the hopper's inventory.
+     *
+     * @return whether any items were successfully added to the hopper
+     */
+    protected boolean pullItems() {
+        return getItemHandler(this, Direction.UP)
+                .map(itemHandlerResult -> {
+                    //get item from item handler
+                    if (Services.CONFIG.isPullItemsFromInventoriesEnabled()) {
+                        return pullItemsFromItemHandler(itemHandlerResult.getKey(), itemHandlerResult.getValue());
+                    }
+                    return false;
+                }).orElseGet(() -> {
+                    //capture item
+                    if (Services.CONFIG.isPullItemsFromWorldEnabled()) {
+                        for (ItemEntity itementity : getCaptureItems(this)) {
+                            if (this.captureItem(itementity)) {
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                });
+    }
+
+    protected void updateCooldown(boolean inventoryWasEmpty, BlockEntity source, Object destination) {
+        if (inventoryWasEmpty && destination instanceof WoodenHopperBlockEntity destinationHopper && !destinationHopper.mayTransfer()) {
+            int k = 0;
+            if (source instanceof WoodenHopperBlockEntity && destinationHopper.getLastUpdateTime() >= ((WoodenHopperBlockEntity) source).getLastUpdateTime()) {
+                k = 1;
+            }
+            destinationHopper.setTransferCooldown(Services.CONFIG.getCooldown() - k);
+        }
+    }
+
+    private List<ItemEntity> getCaptureItems(WoodenHopperBlockEntity hopperEntity) {
         return hopperEntity.getLevel().getEntitiesOfClass(ItemEntity.class, hopperEntity.getSuckAabb().move(hopperEntity.getLevelX() - 0.5D, hopperEntity.getLevelY() - 0.5D, hopperEntity.getLevelZ() - 0.5D), EntitySelector.ENTITY_STILL_ALIVE);
     }
+
+    protected void updateHopper(Supplier<Boolean> p_200109_1_) {
+        if (this.level != null && !this.level.isClientSide) {
+            if (!this.isOnTransferCooldown() && this.getBlockState().getValue(HopperBlock.ENABLED)) {
+                boolean flag = false;
+                if (!this.isEmpty()) {
+                    flag = this.transferItemsOut();
+                }
+                if (isNotFull(this.getOwnItemHandler())) {
+                    flag |= p_200109_1_.get();
+                }
+                if (flag) {
+                    this.setTransferCooldown(Services.CONFIG.getCooldown());
+                    this.setChanged();
+                }
+            }
+        }
+    }
+
+    private Optional<Pair<Object, Object>> getItemHandler(WoodenHopperBlockEntity hopper, Direction hopperFacing) {
+        double x = hopper.getLevelX() + (double) hopperFacing.getStepX();
+        double y = hopper.getLevelY() + (double) hopperFacing.getStepY();
+        double z = hopper.getLevelZ() + (double) hopperFacing.getStepZ();
+        return getItemHandler(hopper.getLevel(), x, y, z, hopperFacing.getOpposite());
+    }
+
+    private boolean transferItemsOut() {
+        Direction hopperFacing = this.getBlockState().getValue(HopperBlock.FACING);
+        return getItemHandler(this, hopperFacing)
+                .map(destinationResult -> {
+                    Object itemHandler = destinationResult.getKey();
+                    Object destination = destinationResult.getValue();
+                    if (isNotFull(itemHandler)) {
+                        for (int i = 0; i < this.getContainerSize(); ++i) {
+                            if (!this.getItem(i).isEmpty()) {
+                                ItemStack originalSlotContents = this.getItem(i).copy();
+                                ItemStack insertStack = this.removeItem(i, 1);
+                                ItemStack remainder = putStackInInventoryAllSlots(this, destination, itemHandler, insertStack);
+                                if (remainder.isEmpty()) {
+                                    return true;
+                                }
+                                this.setItem(i, originalSlotContents);
+                            }
+                        }
+
+                    }
+                    return false;
+                })
+                .orElse(false);
+    }
+
+    private boolean captureItem(ItemEntity itemEntity) {
+        boolean flag = false;
+        ItemStack itemstack = itemEntity.getItem().copy();
+        ItemStack itemstack1 = putStackInInventoryAllSlots(null, this, getOwnItemHandler(), itemstack);
+        if (itemstack1.isEmpty()) {
+            flag = true;
+            itemEntity.remove(Entity.RemovalReason.DISCARDED);
+        } else {
+            itemEntity.setItem(itemstack1);
+        }
+        return flag;
+    }
+
 }

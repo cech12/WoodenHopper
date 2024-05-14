@@ -10,6 +10,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -83,10 +84,14 @@ public class WoodenHopperBlock extends HopperBlock {
     }
 
     @Override
-    public void entityInside(@NotNull BlockState state, Level worldIn, @NotNull BlockPos pos, @NotNull Entity entityIn) {
-        BlockEntity blockEntity = worldIn.getBlockEntity(pos);
-        if (blockEntity instanceof WoodenHopperBlockEntity woodenHopperBlockEntity) {
-            woodenHopperBlockEntity.onEntityCollision(entityIn);
+    public void entityInside(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Entity entity) {
+        if (Services.CONFIG.isPullItemsFromWorldEnabled() && entity instanceof ItemEntity itemEntity) {
+            BlockEntity blockEntity = level.getBlockEntity(pos);
+            if (blockEntity instanceof WoodenHopperBlockEntity woodenHopperBlockEntity
+                    && !itemEntity.getItem().isEmpty() && itemEntity.getBoundingBox().move((-pos.getX()), (-pos.getY()), (-pos.getZ())).intersects(woodenHopperBlockEntity.getSuckAabb())
+            ) {
+                woodenHopperBlockEntity.onItemEntityIsCaptured(itemEntity);
+            }
         }
     }
 
