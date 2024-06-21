@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class WoodenHopperScreen extends AbstractContainerScreen<WoodenHopperContainer> {
     /** The ResourceLocation containing the gui texture for the hopper */
-    private static final ResourceLocation HOPPER_GUI_TEXTURE = new ResourceLocation(Constants.MOD_ID, "textures/gui/container/wooden_hopper.png");
+    private static final ResourceLocation HOPPER_GUI_TEXTURE = Constants.id("textures/gui/container/wooden_hopper.png");
 
     public WoodenHopperScreen(WoodenHopperContainer screenContainer, Inventory inv, Component titleIn) {
         super(screenContainer, inv, titleIn);

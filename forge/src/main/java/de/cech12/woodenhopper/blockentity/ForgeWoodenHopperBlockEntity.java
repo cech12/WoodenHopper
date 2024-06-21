@@ -43,7 +43,7 @@ public class ForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
         super.loadAdditional(nbt, provider);
         inventory = new ItemStackHandler();
         if (!this.tryLoadLootTable(nbt)) {
-            this.inventory.deserializeNBT(nbt);
+            this.inventory.deserializeNBT(provider, nbt);
         }
     }
 

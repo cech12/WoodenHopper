@@ -4,8 +4,6 @@ import de.cech12.woodenhopper.client.WoodenHopperScreen;
 import de.cech12.woodenhopper.platform.ForgeRegistryHelper;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.world.item.CreativeModeTabs;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -26,7 +24,6 @@ public class ForgeWoodenHopperMod {
         CommonLoader.init();
     }
 
-    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     public static void onClientRegister(FMLClientSetupEvent event) {
         MenuScreens.register(Constants.WOODEN_HOPPER_MENU_TYPE.get(), WoodenHopperScreen::new);

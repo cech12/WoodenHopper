@@ -2,6 +2,7 @@ package de.cech12.woodenhopper;
 
 import de.cech12.woodenhopper.blockentity.WoodenHopperBlockEntity;
 import de.cech12.woodenhopper.inventory.WoodenHopperContainer;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -29,5 +30,9 @@ public class Constants {
     public static Supplier<MenuType<WoodenHopperContainer>> WOODEN_HOPPER_MENU_TYPE;
 
     private Constants() {}
+
+    public static ResourceLocation id(String name) {
+        return ResourceLocation.fromNamespaceAndPath(MOD_ID, name);
+    }
 
 }
