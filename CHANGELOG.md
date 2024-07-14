@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 - the `config` directory is used for the default configuration (NeoForge)
 
 ### Fixed
-- crashed on startup with NeoForge (caused by a breaking change in 21.0.82-beta) (thanks to ffuentesm for the report) #24
+- crashed on startup with NeoForge (caused by a breaking change in 21.0.82-beta) (thanks to ffuentesm for the report) #26
 
 ## [1.21-3.0.0.0] - 2024-06-21
 ### Changed
