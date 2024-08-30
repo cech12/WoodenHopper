@@ -14,8 +14,7 @@ import me.shedaniel.autoconfig.serializer.Toml4jConfigSerializer;
 @Config(name = Constants.MOD_ID)
 public class FabricConfigHelper implements ConfigData, IConfigHelper {
 
-    @ConfigEntry.Gui.Tooltip(count = 4)
-    @ConfigEntry.BoundedDiscrete(min = COOLDOWN_MIN, max = COOLDOWN_MAX)
+    @ConfigEntry.Gui.Tooltip(count = 5)
     public int COOLDOWN = COOLDOWN_DEFAULT;
 
     @ConfigEntry.Gui.Tooltip(count = 3)
@@ -35,7 +34,7 @@ public class FabricConfigHelper implements ConfigData, IConfigHelper {
 
     @Override
     public int getCooldown() {
-        return getConfig().COOLDOWN;
+        return Math.clamp(getConfig().COOLDOWN, COOLDOWN_MIN, COOLDOWN_MAX);
     }
 
     @Override
