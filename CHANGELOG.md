@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Forge Recommended Versioning](https://mcforge.readthedocs.io/en/latest/conventions/versioning/).
 
+## [1.21.1-3.2.0.0] - 2024-10-15
+- updated to Minecraft 1.21.1 (Fabric 0.105.0+1.21.1, NeoForge 21.1.62, Forge 52.0.21)
+- updated Cloth Config support (15.0.140) (Fabric/Quilt)
+- updated ModMenu support (11.0.2) (Fabric/Quilt)
+
+### Fixed
+- fixed hoppers recipe and advancement by using the new common tags in Forge
+
 ## [1.21-3.1.1.0] - 2024-08-30
 ### Changed
 - cooldown config option is now text field instead of a slider (Fabric)
