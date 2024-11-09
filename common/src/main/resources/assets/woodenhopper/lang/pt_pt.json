@@ -1,4 +1,6 @@
 {
+  "item.woodenhopper.wooden_hopper": "Funil de Madeira",
+
   "block.woodenhopper.wooden_hopper": "Funil de Madeira",
   "block.woodenhopper.wooden_hopper.desc.cannotAbsorbItemsFromWorld": "Não é possível puxar itens ou entidades acima do funil.",
   "block.woodenhopper.wooden_hopper.desc.cannotAbsorbItemsFromInventories": "Não é possível retirar itens dos inventários acima do funil."
