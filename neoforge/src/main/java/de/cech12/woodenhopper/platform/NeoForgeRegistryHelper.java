@@ -5,12 +5,12 @@ import de.cech12.woodenhopper.block.WoodenHopperBlock;
 import de.cech12.woodenhopper.blockentity.NeoForgeWoodenHopperBlockEntity;
 import de.cech12.woodenhopper.blockentity.WoodenHopperBlockEntity;
 import de.cech12.woodenhopper.inventory.WoodenHopperContainer;
+import de.cech12.woodenhopper.item.WoodenHopperItem;
 import de.cech12.woodenhopper.platform.services.IRegistryHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
@@ -40,7 +40,7 @@ public class NeoForgeRegistryHelper implements IRegistryHelper {
     }
 
     private static DeferredItem<Item> fromBlock(String name, DeferredBlock<Block> block) {
-        return ITEMS.register(block.getId().getPath(), () -> new BlockItem(block.get(), new Item.Properties().setId(ResourceKey.create(BuiltInRegistries.ITEM.key(), Constants.id(name)))));
+        return ITEMS.register(block.getId().getPath(), () -> new WoodenHopperItem(block.get(), new Item.Properties().setId(ResourceKey.create(BuiltInRegistries.ITEM.key(), Constants.id(name)))));
     }
 
     @Override

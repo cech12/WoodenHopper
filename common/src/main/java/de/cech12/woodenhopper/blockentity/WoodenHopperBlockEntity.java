@@ -42,7 +42,7 @@ public abstract class WoodenHopperBlockEntity extends RandomizableContainerBlock
     @Override
     protected void loadAdditional(@NotNull CompoundTag nbt, @NotNull HolderLookup.Provider provider) {
         super.loadAdditional(nbt, provider);
-        this.transferCooldown = nbt.getInt("TransferCooldown");
+        this.transferCooldown = nbt.getIntOr("TransferCooldown",  -1);
     }
 
     @Override
