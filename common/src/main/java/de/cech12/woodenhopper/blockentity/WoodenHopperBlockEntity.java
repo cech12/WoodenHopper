@@ -5,8 +5,6 @@ import de.cech12.woodenhopper.inventory.WoodenHopperContainer;
 import de.cech12.woodenhopper.platform.Services;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.Entity;
@@ -21,6 +19,8 @@ import net.minecraft.world.level.block.entity.Hopper;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -40,15 +40,15 @@ public abstract class WoodenHopperBlockEntity extends RandomizableContainerBlock
     }
 
     @Override
-    protected void loadAdditional(@NotNull CompoundTag nbt, @NotNull HolderLookup.Provider provider) {
-        super.loadAdditional(nbt, provider);
-        this.transferCooldown = nbt.getIntOr("TransferCooldown",  -1);
+    protected void loadAdditional(@NotNull ValueInput valueInput) {
+        super.loadAdditional(valueInput);
+        this.transferCooldown = valueInput.getIntOr("TransferCooldown",  -1);
     }
 
     @Override
-    public void saveAdditional(@NotNull CompoundTag compound, @NotNull HolderLookup.Provider provider) {
-        super.saveAdditional(compound, provider);
-        compound.putInt("TransferCooldown", this.transferCooldown);
+    public void saveAdditional(@NotNull ValueOutput valueOutput) {
+        super.saveAdditional(valueOutput);
+        valueOutput.putInt("TransferCooldown", this.transferCooldown);
     }
 
     @Override

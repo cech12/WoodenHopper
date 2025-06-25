@@ -17,7 +17,7 @@ import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 
 @SuppressWarnings("unused")
 @Mod(Constants.MOD_ID)
-@EventBusSubscriber(modid= Constants.MOD_ID, bus= EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid= Constants.MOD_ID)
 public class NeoForgeWoodenHopperMod {
 
     public NeoForgeWoodenHopperMod(IEventBus modEventBus) {

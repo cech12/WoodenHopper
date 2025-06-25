@@ -3,10 +3,9 @@ package de.cech12.woodenhopper.blockentity;
 import de.cech12.woodenhopper.block.ForgeWoodenHopperItemHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.Container;
+import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
 import net.minecraft.world.entity.Entity;
@@ -16,6 +15,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
@@ -39,19 +40,20 @@ public class ForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
     }
 
     @Override
-    protected void loadAdditional(@NotNull CompoundTag nbt, @NotNull HolderLookup.Provider provider) {
-        super.loadAdditional(nbt, provider);
-        inventory = new ItemStackHandler();
-        if (!this.tryLoadLootTable(nbt)) {
-            this.inventory.deserializeNBT(provider, nbt);
+    protected void loadAdditional(@NotNull ValueInput valueInput) {
+        super.loadAdditional(valueInput);
+        NonNullList<ItemStack> stacks = NonNullList.withSize(1, ItemStack.EMPTY);
+        if (!this.tryLoadLootTable(valueInput)) {
+            ContainerHelper.loadAllItems(valueInput, stacks);
         }
+        inventory = new ItemStackHandler(stacks);
     }
 
     @Override
-    public void saveAdditional(@NotNull CompoundTag compound, @NotNull HolderLookup.Provider provider) {
-        super.saveAdditional(compound, provider);
-        if (!this.trySaveLootTable(compound)) {
-            compound.merge(this.inventory.serializeNBT(provider));
+    public void saveAdditional(@NotNull ValueOutput valueOutput) {
+        super.saveAdditional(valueOutput);
+        if (!this.trySaveLootTable(valueOutput)) {
+            ContainerHelper.saveAllItems(valueOutput, NonNullList.withSize(1, this.inventory.getStackInSlot(0)));
         }
     }
 

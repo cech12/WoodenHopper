@@ -2,9 +2,7 @@ package de.cech12.woodenhopper.blockentity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.Container;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
@@ -15,6 +13,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
@@ -36,19 +36,19 @@ public class NeoForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
     }
 
     @Override
-    protected void loadAdditional(@NotNull CompoundTag nbt, @NotNull HolderLookup.Provider provider) {
-        super.loadAdditional(nbt, provider);
+    protected void loadAdditional(@NotNull ValueInput valueInput) {
+        super.loadAdditional(valueInput);
         inventory = new ItemStackHandler();
-        if (!this.tryLoadLootTable(nbt)) {
-            this.inventory.deserializeNBT(provider, nbt);
+        if (!this.tryLoadLootTable(valueInput)) {
+            this.inventory.deserialize(valueInput);
         }
     }
 
     @Override
-    public void saveAdditional(@NotNull CompoundTag compound, @NotNull HolderLookup.Provider provider) {
-        super.saveAdditional(compound, provider);
-        if (!this.trySaveLootTable(compound)) {
-            compound.merge(this.inventory.serializeNBT(provider));
+    public void saveAdditional(@NotNull ValueOutput valueOutput) {
+        super.saveAdditional(valueOutput);
+        if (!this.trySaveLootTable(valueOutput)) {
+            this.inventory.serialize(valueOutput);
         }
     }
 
