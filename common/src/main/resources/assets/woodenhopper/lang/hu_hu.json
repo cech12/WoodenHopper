@@ -1,0 +1,24 @@
+{
+  "block.woodenhopper.wooden_hopper": "Fatölcsér",
+  "block.woodenhopper.wooden_hopper.desc.cannotAbsorbItemsFromWorld": "Nem tudja beszívni a felette lévő entitásokat.",
+  "block.woodenhopper.wooden_hopper.desc.cannotAbsorbItemsFromInventories": "Nem tudja beszívni a felette lévő tárolókból az elemeket.",
+
+  "text.autoconfig.woodenhopper.title": "Fatölcsér beállítások",
+
+  "text.autoconfig.woodenhopper.option.COOLDOWN": "Fatölcsér feltöltési idő",
+  "text.autoconfig.woodenhopper.option.COOLDOWN.@Tooltip[0]": "§6§lFatölcsér feltöltési idő",
+  "text.autoconfig.woodenhopper.option.COOLDOWN.@Tooltip[1]": "Idő (tick) két fatölcsér művelet között.",
+  "text.autoconfig.woodenhopper.option.COOLDOWN.@Tooltip[2]": "§7§oMin: 1; Max: 1000",
+  "text.autoconfig.woodenhopper.option.COOLDOWN.@Tooltip[3]": "§7§oAlapérték: 16",
+  "text.autoconfig.woodenhopper.option.COOLDOWN.@Tooltip[4]": "§7§o(Vanilla tölcsér: 8)",
+
+  "text.autoconfig.woodenhopper.option.PULL_ITEMS_FROM_WORLD_ENABLED": "Fatölcsér entitások beszívása",
+  "text.autoconfig.woodenhopper.option.PULL_ITEMS_FROM_WORLD_ENABLED.@Tooltip[0]": "§6§lFatölcsér tárgyakat szív be a világból",
+  "text.autoconfig.woodenhopper.option.PULL_ITEMS_FROM_WORLD_ENABLED.@Tooltip[1]": "A fatölcsér képes beszívni a felette lévő tárgy entitásokat.",
+  "text.autoconfig.woodenhopper.option.PULL_ITEMS_FROM_WORLD_ENABLED.@Tooltip[2]": "§7§oAlapérték: true",
+
+  "text.autoconfig.woodenhopper.option.PULL_ITEMS_FROM_INVENTORIES_ENABLED": "Fatölcsér tárolók beszívása",
+  "text.autoconfig.woodenhopper.option.PULL_ITEMS_FROM_INVENTORIES_ENABLED.@Tooltip[0]": "§6§lFatölcsér tárolókból szív be tárgyakat",
+  "text.autoconfig.woodenhopper.option.PULL_ITEMS_FROM_INVENTORIES_ENABLED.@Tooltip[1]": "A fatölcsér képes beszívni a felette lévő tárolókból elemeket.",
+  "text.autoconfig.woodenhopper.option.PULL_ITEMS_FROM_INVENTORIES_ENABLED.@Tooltip[2]": "§7§oAlapérték: true"
+}
