@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Forge Recommended Versioning](https://mcforge.readthedocs.io/en/latest/conventions/versioning/).
 
+## [1.21.4-3.4.1.0] - 2025-07-10
+### Added
+- Added Hungarian translation (thanks to bayi for the contribution) #39
+
 ## [1.21.4-3.4.0.0] - 2025-02-11
 ### Changed
 - updated to Minecraft 1.21.4 (Fabric 0.116.0+1.21.4, Neoforge 21.4.88-beta, Forge 54.0.26)
