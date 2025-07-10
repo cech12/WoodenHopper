@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Forge Recommended Versioning](https://mcforge.readthedocs.io/en/latest/conventions/versioning/).
 
+## [1.20.4-2.2.2.0] - 2025-07-10
+### Added
+- Added Hungarian translation (thanks to bayi for the contribution) #39
+
 ## [1.20.4-2.2.1.0] - 2024-05-11
 ### Added
 - better compatibility with mods that do not support ItemHandlers (Forge & NeoForge)
