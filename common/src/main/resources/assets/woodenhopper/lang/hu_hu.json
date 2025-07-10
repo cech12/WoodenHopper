@@ -1,6 +1,4 @@
 {
-  "item.woodenhopper.wooden_hopper": "Fatölcsér",
-
   "block.woodenhopper.wooden_hopper": "Fatölcsér",
   "block.woodenhopper.wooden_hopper.desc.cannotAbsorbItemsFromWorld": "Nem tudja beszívni a felette lévő entitásokat.",
   "block.woodenhopper.wooden_hopper.desc.cannotAbsorbItemsFromInventories": "Nem tudja beszívni a felette lévő tárolókból az elemeket.",
