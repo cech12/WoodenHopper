@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [this versioning scheme](https://gist.github.com/cech12/69319028e88c50349a6b044000a6607b).
 
+## [1.20.6-2.3.1.0] - 2025-07-10
+### Added
+- Added Hungarian translation (thanks to bayi for the contribution) #39
+
 ## [1.20.6-2.3.0.0] - 2024-05-14
 ### Added
 - use the vanilla "does_not_block_hoppers" block tag to enhance performance
