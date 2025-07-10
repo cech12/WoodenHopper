@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Forge Recommended Versioning](https://mcforge.readthedocs.io/en/latest/conventions/versioning/).
 
+## [1.21.1-3.2.1.0] - 2025-07-10
+### Added
+- Added Hungarian translation (thanks to bayi for the contribution) #39
+
 ## [1.21.1-3.2.0.0] - 2024-10-15
 - updated to Minecraft 1.21.1 (Fabric 0.105.0+1.21.1, NeoForge 21.1.62, Forge 52.0.21)
 - updated Cloth Config support (15.0.140) (Fabric/Quilt)
