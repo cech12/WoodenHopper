@@ -1,5 +1,6 @@
 package de.cech12.woodenhopper.blockentity;
 
+import de.cech12.woodenhopper.platform.Services;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -16,10 +17,14 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.ItemStackHandler;
-import net.neoforged.neoforge.items.wrapper.InvWrapper;
-import net.neoforged.neoforge.items.wrapper.SidedInvWrapper;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
+import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
+import net.neoforged.neoforge.transfer.item.WorldlyContainerWrapper;
+import net.neoforged.neoforge.transfer.transaction.SnapshotJournal;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -29,7 +34,7 @@ import java.util.Optional;
 
 public class NeoForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
 
-    private ItemStackHandler inventory = new ItemStackHandler();
+    private ItemStacksResourceHandler inventory = new ItemStacksResourceHandler(1);
 
     public NeoForgeWoodenHopperBlockEntity(BlockPos pos, BlockState state) {
         super(pos, state);
@@ -38,7 +43,7 @@ public class NeoForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
     @Override
     protected void loadAdditional(@NotNull ValueInput valueInput) {
         super.loadAdditional(valueInput);
-        inventory = new ItemStackHandler();
+        inventory = new ItemStacksResourceHandler(1);
         if (!this.tryLoadLootTable(valueInput)) {
             this.inventory.deserialize(valueInput);
         }
@@ -57,19 +62,19 @@ public class NeoForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
      */
     @Override
     public int getContainerSize() {
-        return this.inventory.getSlots();
+        return this.inventory.size();
     }
 
     @Override
     @NotNull
     protected NonNullList<ItemStack> getItems() {
-        return NonNullList.withSize(1, this.inventory.getStackInSlot(0));
+        return NonNullList.withSize(1, this.inventory.getResource(0).toStack(this.inventory.getAmountAsInt(0)));
     }
 
     @Override
     protected void setItems(@NotNull NonNullList<ItemStack> itemsIn) {
         if (itemsIn.size() == 1) {
-            this.inventory.setStackInSlot(0, itemsIn.getFirst());
+            this.inventory.set(0, ItemResource.of(itemsIn.getFirst()), itemsIn.getFirst().getCount());
         }
         //this.setChanged(); //don't set it as changed to be compatible with Canary
     }
@@ -81,9 +86,16 @@ public class NeoForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
     @NotNull
     public ItemStack removeItem(int index, int count) {
         this.unpackLootTable(null);
-        ItemStack stack = this.inventory.extractItem(index, count, false);
-        this.setChanged();
-        return stack;
+        try (Transaction transaction = Transaction.open(null)) {
+            ItemResource resource = this.inventory.getResource(index);
+            if (!resource.isEmpty()) {
+                int extractedAmount = this.inventory.extract(index, resource, count, transaction);
+                transaction.commit();
+                this.setChanged();
+                return resource.toStack(extractedAmount);
+            }
+        }
+        return ItemStack.EMPTY;
     }
 
     /**
@@ -92,38 +104,52 @@ public class NeoForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
     @Override
     @NotNull
     public ItemStack removeItemNoUpdate(int index) {
-        this.unpackLootTable(null);
-        ItemStack stack = this.inventory.getStackInSlot(index);
-        this.inventory.setStackInSlot(index, ItemStack.EMPTY);
-        this.setChanged();
-        return stack;
+        try (Transaction transaction = Transaction.open(null)) {
+            this.unpackLootTable(null);
+            ItemResource resource = this.inventory.getResource(index);
+            int amount = this.inventory.getAmountAsInt(index);
+            if (!resource.isEmpty() && amount > 0) {
+                int extractedAmount = this.inventory.extract(index, resource, amount, transaction);
+                ItemStack stack = resource.toStack(extractedAmount);
+                transaction.commit();
+                this.setChanged();
+                return stack;
+            }
+        }
+        return ItemStack.EMPTY;
     }
 
     /**
      * Sets the given item stack to the specified slot in the inventory (can be crafting or armor sections).
      */
     @Override
-    public void setItem(int index, @NotNull ItemStack stack) {
+    public void setItem(int index, @NotNull ItemStack stack, boolean insideTransaction) {
+        super.setItem(index, stack, insideTransaction);
         this.unpackLootTable(null);
-        this.inventory.setStackInSlot(index, stack);
-        this.setChanged();
+        this.inventory.set(index, ItemResource.of(stack), stack.getCount());
+        if (!insideTransaction) {
+            this.setChanged();
+        }
     }
 
     @Override
     protected ItemStack putStackInInventoryAllSlots(BlockEntity source, Object destination, Object destInventoryObj, ItemStack stack) {
-        IItemHandler destInventory = (IItemHandler) destInventoryObj;
-        for (int slot = 0; slot < destInventory.getSlots() && !stack.isEmpty(); slot++) {
+        ResourceHandler<ItemResource> destInventory = (ResourceHandler<ItemResource>) destInventoryObj;
+        for (int slot = 0; slot < destInventory.size() && !stack.isEmpty(); slot++) {
             stack = insertStack(source, destination, destInventory, stack, slot);
         }
         return stack;
     }
 
-    private ItemStack insertStack(BlockEntity source, Object destination, IItemHandler destInventory, ItemStack stack, int slot) {
+    private ItemStack insertStack(BlockEntity source, Object destination, ResourceHandler<ItemResource> destInventory, ItemStack stack, int slot) {
         ItemStack result = stack;
-        if (!destInventory.insertItem(slot, stack, true).equals(stack)) {
-            boolean inventoryWasEmpty = isEmpty(destInventory);
-            result = destInventory.insertItem(slot, stack, false);
-            if (result.getCount() < stack.getCount()) {
+        boolean inventoryWasEmpty = isEmpty(destInventory);
+        try (Transaction transaction = Transaction.open(null)) {
+            ItemResource resource = ItemResource.of(stack);
+            int insertedAmount = destInventory.insert(slot, resource, stack.getCount(), transaction);
+            if (insertedAmount <= stack.getCount()) {
+                result = resource.toStack(stack.getCount() - insertedAmount);
+                transaction.commit();
                 updateCooldown(inventoryWasEmpty, source, destination);
             }
         }
@@ -137,38 +163,38 @@ public class NeoForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
         if (state.hasBlockEntity()) {
             BlockEntity blockEntity = level.getBlockEntity(blockpos);
             if (blockEntity != null) {
-                IItemHandler handler = level.getCapability(Capabilities.ItemHandler.BLOCK, blockpos, state, blockEntity, side);
+                ResourceHandler<ItemResource> handler = level.getCapability(Capabilities.Item.BLOCK, blockpos, state, blockEntity, side);
                 if (handler != null) {
                     return Optional.of(ImmutablePair.of(handler, blockEntity));
                 }
             }
             //support vanilla inventory block entities without IItemHandler
             if (blockEntity instanceof WorldlyContainer container) {
-                return Optional.of(ImmutablePair.of(new SidedInvWrapper(container, side), state));
+                return Optional.of(ImmutablePair.of(new WorldlyContainerWrapper(container, side), state));
             }
             if (blockEntity instanceof Container container) {
-                return Optional.of(ImmutablePair.of(new InvWrapper(container), state));
+                return Optional.of(ImmutablePair.of(VanillaContainerWrapper.of(container), state));
             }
         }
         //support vanilla inventory blocks without IItemHandler
         Block block = state.getBlock();
         if (block instanceof WorldlyContainerHolder) {
-            return Optional.of(ImmutablePair.of(new SidedInvWrapper(((WorldlyContainerHolder)block).getContainer(state, level, blockpos), side), state));
+            return Optional.of(ImmutablePair.of(new WorldlyContainerWrapper(((WorldlyContainerHolder)block).getContainer(state, level, blockpos), side), state));
         }
         //get entities with item handlers
         List<Entity> list = getAllAliveEntitiesAt(level, x, y, z,
-                entity -> entity instanceof Container || !(entity instanceof LivingEntity) && entity.getCapability(Capabilities.ItemHandler.ENTITY_AUTOMATION, side) != null);
+                entity -> entity instanceof Container || !(entity instanceof LivingEntity) && entity.getCapability(Capabilities.Item.ENTITY_AUTOMATION, side) != null);
         if (!list.isEmpty()) {
             Entity entity = list.get(level.random.nextInt(list.size()));
-            IItemHandler cap = entity.getCapability(Capabilities.ItemHandler.ENTITY_AUTOMATION, side);
+            ResourceHandler<ItemResource> cap = entity.getCapability(Capabilities.Item.ENTITY_AUTOMATION, side);
             if (cap != null) {
                 return Optional.of(ImmutablePair.of(cap, entity));
             }
             if (entity instanceof WorldlyContainer container) {
-                return Optional.of(ImmutablePair.of(new SidedInvWrapper(container, side), entity));
+                return Optional.of(ImmutablePair.of(new WorldlyContainerWrapper(container, side), entity));
             }
             if (entity instanceof Container containerEntity) {
-                return Optional.of(ImmutablePair.of(new InvWrapper((containerEntity)), entity));
+                return Optional.of(ImmutablePair.of(VanillaContainerWrapper.of((containerEntity)), entity));
             }
         }
         return Optional.empty();
@@ -176,20 +202,20 @@ public class NeoForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
 
     @Override
     protected boolean isNotFull(Object itemHandlerObj) {
-        IItemHandler itemHandler = (IItemHandler) itemHandlerObj;
-        for (int slot = 0; slot < itemHandler.getSlots(); slot++) {
-            ItemStack stackInSlot = itemHandler.getStackInSlot(slot);
-            if (stackInSlot.isEmpty() || stackInSlot.getCount() < itemHandler.getSlotLimit(slot)) {
+        ResourceHandler<ItemResource> itemHandler = (ResourceHandler<ItemResource>) itemHandlerObj;
+        for (int slot = 0; slot < itemHandler.size(); slot++) {
+            ItemResource resource = itemHandler.getResource(slot);
+            int amount = itemHandler.getAmountAsInt(slot);
+            if (resource.isEmpty() || amount <= 0 || amount < itemHandler.getCapacityAsInt(slot, resource)) {
                 return true;
             }
         }
         return false;
     }
 
-    private boolean isEmpty(IItemHandler itemHandler) {
-        for (int slot = 0; slot < itemHandler.getSlots(); slot++) {
-            ItemStack stackInSlot = itemHandler.getStackInSlot(slot);
-            if (stackInSlot.getCount() > 0) {
+    private boolean isEmpty(ResourceHandler<ItemResource> itemHandler) {
+        for (int slot = 0; slot < itemHandler.size(); slot++) {
+            if (itemHandler.getAmountAsInt(slot) > 0) {
                 return false;
             }
         }
@@ -198,23 +224,29 @@ public class NeoForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
 
     @Override
     protected boolean pullItemsFromItemHandler(Object itemHandler) {
-        IItemHandler handler = (IItemHandler) itemHandler;
-        for (int i = 0; i < handler.getSlots(); i++) {
-            ItemStack extractItem = handler.extractItem(i, 1, true);
-            if (!extractItem.isEmpty()) {
-                for (int j = 0; j < this.getContainerSize(); j++) {
-                    ItemStack destStack = this.getItem(j);
-                    if (this.canPlaceItem(j, extractItem) && (destStack.isEmpty() || destStack.getCount() < destStack.getMaxStackSize()
-                            && destStack.getCount() < this.getMaxStackSize() && ItemStack.isSameItemSameComponents(extractItem, destStack))) {
-                        extractItem = handler.extractItem(i, 1, false);
-                        if (destStack.isEmpty()) {
-                            this.setItem(j, extractItem);
-                        } else {
-                            destStack.grow(1);
-                            this.setItem(j, destStack);
+        ResourceHandler<ItemResource> handler = (ResourceHandler<ItemResource>) itemHandler;
+        for (int i = 0; i < handler.size(); i++) {
+            try (Transaction transaction = Transaction.open(null)) {
+                ItemResource resource = handler.getResource(i);
+                if (!resource.isEmpty()) {
+                    int extractedAmount = handler.extract(i, resource, 1, transaction);
+                    if (extractedAmount > 0) {
+                        ItemStack extractItem = resource.toStack(extractedAmount);
+                        for (int j = 0; j < this.getContainerSize(); j++) {
+                            ItemStack destStack = this.getItem(j);
+                            if (this.canPlaceItem(j, extractItem) && (destStack.isEmpty() || destStack.getCount() < destStack.getMaxStackSize()
+                                    && destStack.getCount() < this.getMaxStackSize() && ItemStack.isSameItemSameComponents(extractItem, destStack))) {
+                                transaction.commit();
+                                if (destStack.isEmpty()) {
+                                    this.setItem(j, extractItem);
+                                } else {
+                                    destStack.grow(1);
+                                    this.setItem(j, destStack);
+                                }
+                                this.setChanged();
+                                return true;
+                            }
                         }
-                        this.setChanged();
-                        return true;
                     }
                 }
             }
@@ -226,5 +258,34 @@ public class NeoForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
     protected Object getOwnItemHandler() {
         return this.inventory;
     }
+
+    @Override
+    public void onTransfer(int slot, int amountChange, @NotNull TransactionContext transaction) {
+        if (amountChange > 0 && wasEmpty(slot, amountChange)) {
+            cooldownTimeJournal.updateSnapshots(transaction);
+            transferCooldown = (Services.CONFIG.getCooldown());
+        }
+    }
+
+    private boolean wasEmpty(int slot, int amountChange) {
+        if (inventory.getAmountAsInt(slot) != amountChange) return false;
+        for (int i = 0; i < inventory.size(); ++i) {
+            if (i != slot && inventory.getAmountAsInt(i) > 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private final SnapshotJournal<Integer> cooldownTimeJournal = new SnapshotJournal<>() {
+        @Override
+        protected Integer createSnapshot() {
+            return transferCooldown;
+        }
+        @Override
+        protected void revertToSnapshot(Integer snapshot) {
+            transferCooldown = snapshot;
+        }
+    };
 
 }

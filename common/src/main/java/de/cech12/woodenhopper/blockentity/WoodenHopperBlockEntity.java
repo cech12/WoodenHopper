@@ -114,7 +114,7 @@ public abstract class WoodenHopperBlockEntity extends RandomizableContainerBlock
     }
 
     public static void tick(Level level, WoodenHopperBlockEntity entity) {
-        if (level != null && !level.isClientSide) {
+        if (level != null && !level.isClientSide()) {
             entity.transferCooldown--;
             entity.tickedGameTime = level.getGameTime();
             if (entity.isNotOnTransferCooldown()) {
@@ -182,7 +182,7 @@ public abstract class WoodenHopperBlockEntity extends RandomizableContainerBlock
     }
 
     protected void updateHopper(Supplier<Boolean> p_200109_1_) {
-        if (this.level != null && !this.level.isClientSide) {
+        if (this.level != null && !this.level.isClientSide()) {
             if (this.isNotOnTransferCooldown() && this.getBlockState().getValue(HopperBlock.ENABLED)) {
                 boolean flag = false;
                 if (!this.isEmpty()) {

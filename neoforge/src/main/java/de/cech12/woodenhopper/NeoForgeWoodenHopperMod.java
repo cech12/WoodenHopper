@@ -1,19 +1,15 @@
 package de.cech12.woodenhopper;
 
-import de.cech12.woodenhopper.block.NeoForgeWoodenHopperItemHandler;
-import de.cech12.woodenhopper.client.WoodenHopperScreen;
 import de.cech12.woodenhopper.platform.NeoForgeRegistryHelper;
 import net.minecraft.world.item.CreativeModeTabs;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
-import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
 
 @SuppressWarnings("unused")
 @Mod(Constants.MOD_ID)
@@ -28,15 +24,9 @@ public class NeoForgeWoodenHopperMod {
         CommonLoader.init();
     }
 
-    @OnlyIn(Dist.CLIENT)
-    @SubscribeEvent
-    public static void onMenuScreenRegister(RegisterMenuScreensEvent event) {
-        event.register(Constants.WOODEN_HOPPER_MENU_TYPE.get(), WoodenHopperScreen::new);
-    }
-
     @SubscribeEvent
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, Constants.WOODEN_HOPPER_BLOCK_ENTITY_TYPE.get(), (blockEntity, side) -> new NeoForgeWoodenHopperItemHandler(blockEntity));
+        event.registerBlockEntity(Capabilities.Item.BLOCK, Constants.WOODEN_HOPPER_BLOCK_ENTITY_TYPE.get(), (blockEntity, side) -> VanillaContainerWrapper.of(blockEntity));
     }
 
     @SubscribeEvent

@@ -26,7 +26,7 @@ public class FabricWoodenHopperBlock extends WoodenHopperBlock {
     @Override
     @NotNull
     public InteractionResult useWithoutItem(@NotNull BlockState state, Level worldIn, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hit) {
-        if (worldIn.isClientSide) {
+        if (worldIn.isClientSide()) {
             return InteractionResult.SUCCESS;
         } else {
             BlockEntity blockEntity = worldIn.getBlockEntity(pos);
