@@ -54,7 +54,7 @@ public class WoodenHopperBlock extends HopperBlock {
     }
 
     @Override
-    public void entityInside(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Entity entity, @NotNull InsideBlockEffectApplier insideBlockEffectApplier) {
+    public void entityInside(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Entity entity, @NotNull InsideBlockEffectApplier insideBlockEffectApplier, boolean bl) {
         if (Services.CONFIG.isPullItemsFromWorldEnabled() && entity instanceof ItemEntity itemEntity) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
             if (blockEntity instanceof WoodenHopperBlockEntity woodenHopperBlockEntity
