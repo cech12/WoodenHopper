@@ -1,6 +1,6 @@
 package de.cech12.woodenhopper.blockentity;
 
-import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.ContainerStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
@@ -31,7 +31,7 @@ import java.util.Optional;
 
 public class FabricWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
 
-    private final InventoryStorage inventory = InventoryStorage.of(this, null);
+    private final ContainerStorage inventory = ContainerStorage.of(this, null);
     private NonNullList<ItemStack> items;
 
     public FabricWoodenHopperBlockEntity(BlockPos pos, BlockState state) {
@@ -157,20 +157,20 @@ public class FabricWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
             }
             //support vanilla inventory block entities without IItemHandler
             if (blockEntity instanceof Container container) {
-                return Optional.of(ImmutablePair.of(InventoryStorage.of(container, side), state));
+                return Optional.of(ImmutablePair.of(ContainerStorage.of(container, side), state));
             }
         }
         //support vanilla inventory blocks without ItemStorage
         Block block = state.getBlock();
         if (block instanceof WorldlyContainerHolder containerHolder) {
-            return Optional.of(ImmutablePair.of(InventoryStorage.of(containerHolder.getContainer(state, level, blockpos), side), state));
+            return Optional.of(ImmutablePair.of(ContainerStorage.of(containerHolder.getContainer(state, level, blockpos), side), state));
         }
         //get entities with item handlers
         List<Entity> list = getAllAliveEntitiesAt(level, x, y, z,
                 entity -> entity instanceof Container);
         if (!list.isEmpty()) {
-            Entity entity = list.get(level.random.nextInt(list.size()));
-            return Optional.of(ImmutablePair.of(InventoryStorage.of((ContainerEntity) entity, side), entity));
+            Entity entity = list.get(level.getRandom().nextInt(list.size()));
+            return Optional.of(ImmutablePair.of(ContainerStorage.of((ContainerEntity) entity, side), entity));
         }
         return Optional.empty();
     }

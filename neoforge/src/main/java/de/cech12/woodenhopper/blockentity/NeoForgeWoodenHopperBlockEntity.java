@@ -185,7 +185,7 @@ public class NeoForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
         List<Entity> list = getAllAliveEntitiesAt(level, x, y, z,
                 entity -> entity instanceof Container || !(entity instanceof LivingEntity) && entity.getCapability(Capabilities.Item.ENTITY_AUTOMATION, side) != null);
         if (!list.isEmpty()) {
-            Entity entity = list.get(level.random.nextInt(list.size()));
+            Entity entity = list.get(level.getRandom().nextInt(list.size()));
             ResourceHandler<ItemResource> cap = entity.getCapability(Capabilities.Item.ENTITY_AUTOMATION, side);
             if (cap != null) {
                 return Optional.of(ImmutablePair.of(cap, entity));

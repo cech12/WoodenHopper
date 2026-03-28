@@ -156,7 +156,7 @@ public abstract class WoodenHopperBlockEntity extends RandomizableContainerBlock
                     return false;
                 }).orElseGet(() -> {
                     //capture item
-                    if (Services.CONFIG.isPullItemsFromWorldEnabled()) {
+                    if (this.level != null && Services.CONFIG.isPullItemsFromWorldEnabled()) {
                         BlockPos pos = BlockPos.containing(this.getLevelX(), this.getLevelY() + 1D, this.getLevelZ());
                         BlockState aboveBlockState = this.level.getBlockState(pos);
                         if (aboveBlockState.is(BlockTags.DOES_NOT_BLOCK_HOPPERS) || !aboveBlockState.isCollisionShapeFullBlock(this.level, pos)) {

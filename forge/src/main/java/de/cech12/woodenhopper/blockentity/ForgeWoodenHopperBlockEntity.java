@@ -170,7 +170,7 @@ public class ForgeWoodenHopperBlockEntity extends WoodenHopperBlockEntity {
         List<Entity> list = getAllAliveEntitiesAt(level, x, y, z,
                 entity -> entity instanceof Container || !(entity instanceof LivingEntity) && entity.getCapability(ForgeCapabilities.ITEM_HANDLER, side).isPresent());
         if (!list.isEmpty()) {
-            Entity entity = list.get(level.random.nextInt(list.size()));
+            Entity entity = list.get(level.getRandom().nextInt(list.size()));
             LazyOptional<IItemHandler> cap = entity.getCapability(ForgeCapabilities.ITEM_HANDLER, side);
             if (cap.isPresent()) {
                 return cap.map(capability -> ImmutablePair.of(capability, entity));

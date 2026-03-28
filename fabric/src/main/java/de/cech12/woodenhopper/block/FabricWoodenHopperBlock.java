@@ -2,7 +2,7 @@ package de.cech12.woodenhopper.block;
 
 import de.cech12.woodenhopper.FabricWoodenHopperMod;
 import de.cech12.woodenhopper.blockentity.WoodenHopperBlockEntity;
-import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
+import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -31,14 +31,15 @@ public class FabricWoodenHopperBlock extends WoodenHopperBlock {
         } else {
             BlockEntity blockEntity = worldIn.getBlockEntity(pos);
             if (blockEntity instanceof WoodenHopperBlockEntity container) {
-                player.openMenu(new ExtendedScreenHandlerFactory<>() {
+                player.openMenu(new ExtendedMenuProvider<FabricWoodenHopperMod.HopperData>() {
                     @Override
-                    public Object getScreenOpeningData(ServerPlayer player) {
+                    @NotNull
+                    public FabricWoodenHopperMod.HopperData getScreenOpeningData(@NotNull ServerPlayer player) {
                         return new FabricWoodenHopperMod.HopperData(false);
                     }
 
-                    @NotNull
                     @Override
+                    @NotNull
                     public Component getDisplayName(){
                         return container.getDisplayName();
                     }

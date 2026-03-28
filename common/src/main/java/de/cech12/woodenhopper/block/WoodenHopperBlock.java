@@ -28,6 +28,7 @@ public class WoodenHopperBlock extends HopperBlock {
     }
 
     @Override
+    @NotNull
     public BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
         return Services.REGISTRY.getNewBlockEntity(pos, state);
     }
