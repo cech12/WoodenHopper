@@ -1,6 +1,7 @@
 package de.cech12.woodenhopper.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
+import de.cech12.woodenhopper.inventory.WoodenHopperContainer;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -38,10 +39,12 @@ public class AbstractContainerMenuMixin {
             @Local(name = "slot") Slot slot,
             @Local(name = "target") ItemStack target
     ) {
-        // needed for NeoForge because the ItemStacksResourceHandler of the NeoForgeWoodenHopperBlockEntity returns
-        // only copies of the containing item stacks in the getItems method, so the slot needs to be updated with the
-        // new ItemStack after the count has been set
-        slot.set(target);
+        if ((Object) this instanceof WoodenHopperContainer) {
+            // needed for NeoForge because the ItemStacksResourceHandler of the NeoForgeWoodenHopperBlockEntity returns
+            // only copies of the containing item stacks in the getItems method, so the slot needs to be updated with the
+            // new ItemStack after the count has been set
+            slot.set(target);
+        }
     }
 
 }
