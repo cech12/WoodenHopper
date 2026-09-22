@@ -19,7 +19,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "woodenhopper:wooden_hopper"
+        "recipes": "woodenhopper:wooden_hopper"
       }
     }
   },
