@@ -10,6 +10,8 @@ displayURL="${mod_url}"
 logoFile="logo.png"
 authors="${mod_author}"
 description='''${description}'''
+[[mixins]]
+config="${mod_id}.neoforge.mixins.json"
 [[dependencies.${mod_id}]]
 modId="neoforge"
 type="required"

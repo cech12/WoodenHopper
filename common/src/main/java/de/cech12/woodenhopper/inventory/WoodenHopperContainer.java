@@ -21,15 +21,7 @@ public class WoodenHopperContainer extends AbstractContainerMenu {
         //hopper slot
         this.addSlot(new Slot(inventory, 0, 80, 20));
         //inventory
-        for(int l = 0; l < 3; ++l) {
-            for(int k = 0; k < 9; ++k) {
-                this.addSlot(new Slot(playerInventory, k + l * 9 + 9, 8 + k * 18, l * 18 + 51));
-            }
-        }
-
-        for(int i1 = 0; i1 < 9; ++i1) {
-            this.addSlot(new Slot(playerInventory, i1, 8 + i1 * 18, 109));
-        }
+        this.addStandardInventorySlots(playerInventory, 8, 51);
     }
 
     public WoodenHopperContainer(int id, Inventory playerInventoryIn) {
@@ -65,7 +57,7 @@ public class WoodenHopperContainer extends AbstractContainerMenu {
             }
 
             if (itemstack1.isEmpty()) {
-                slot.set(ItemStack.EMPTY);
+                slot.setByPlayer(ItemStack.EMPTY);
             } else {
                 slot.setChanged();
             }
