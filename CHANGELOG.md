@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [this versioning scheme](https://gist.github.com/cech12/69319028e88c50349a6b044000a6607b).
 
+## [1.21.11-3.8.0.1] - 2026-09-22
+### Fixed
+- shift click an item stack into a wooden hopper with said item already in it deleted the item stack (NeoForge) (thanks to Benassi for the report) #50
+
 ## [1.21.11-3.8.0.0] - 2025-12-13
 ### Changed
 - updated to Minecraft 1.21.11 (Fabric 0.139.5+1.21.11, NeoForge 21.11.6-beta, Forge 61.0.2)
